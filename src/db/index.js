@@ -48,6 +48,9 @@ class ToastyKeyDB {
 
   async _initSchema() {
     try {
+      // Enable WAL mode for better concurrent performance
+      await this.db.run('PRAGMA journal_mode = WAL');
+
       // Create all tables
       for (const tableSQL of schema.tables) {
         await this.db.run(tableSQL);
@@ -295,29 +298,20 @@ class ToastyKeyDB {
   async getTotalSpend(period) {
     const query = this._buildPeriodQuery(period);
     const result = await this.db.get(
-      `SELECT
-        SUM(cost_usd) as total_usd,
-        SUM(cost_inr) as total_inr,
-        COUNT(*) as call_count
+      `SELECT SUM(cost_inr) as total_cost
        FROM api_calls
        WHERE ${query.where}`,
       query.params
     );
 
-    return {
-      total_usd: result.total_usd || 0,
-      total_inr: result.total_inr || 0,
-      call_count: result.call_count || 0
-    };
+    return result.total_cost || 0;
   }
 
   async getSpendByProvider(since = null) {
     let query = `
       SELECT
         provider,
-        SUM(cost_usd) as total_usd,
-        SUM(cost_inr) as total_inr,
-        COUNT(*) as call_count
+        SUM(cost_inr) as total_cost
       FROM api_calls
     `;
 
@@ -327,7 +321,7 @@ class ToastyKeyDB {
       params.push(since);
     }
 
-    query += ' GROUP BY provider ORDER BY total_usd DESC';
+    query += ' GROUP BY provider ORDER BY total_cost DESC';
 
     return await this.db.all(query, params);
   }
@@ -336,9 +330,7 @@ class ToastyKeyDB {
     let query = `
       SELECT
         project,
-        SUM(cost_usd) as total_usd,
-        SUM(cost_inr) as total_inr,
-        COUNT(*) as call_count
+        SUM(cost_inr) as total_cost
       FROM api_calls
       WHERE project IS NOT NULL
     `;
@@ -349,7 +341,7 @@ class ToastyKeyDB {
       params.push(since);
     }
 
-    query += ' GROUP BY project ORDER BY total_usd DESC';
+    query += ' GROUP BY project ORDER BY total_cost DESC';
 
     return await this.db.all(query, params);
   }
@@ -357,30 +349,30 @@ class ToastyKeyDB {
   // ============ UTILITY ============
 
   _buildPeriodQuery(period) {
-    const now = new Date();
-    let startDate;
-
     switch (period) {
-      case 'daily':
-        startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        break;
-      case 'weekly':
-        const dayOfWeek = now.getDay();
-        startDate = new Date(now);
-        startDate.setDate(now.getDate() - dayOfWeek);
-        startDate.setHours(0, 0, 0, 0);
-        break;
-      case 'monthly':
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        break;
+      case 'all':
+        return {
+          where: '1=1',
+          params: []
+        };
+      case 'today':
+        return {
+          where: "DATE(timestamp) = DATE('now')",
+          params: []
+        };
+      case 'week':
+        return {
+          where: "timestamp >= DATE('now', '-7 days')",
+          params: []
+        };
+      case 'month':
+        return {
+          where: "timestamp >= DATE('now', '-30 days')",
+          params: []
+        };
       default:
-        throw new Error(`Invalid period: ${period}`);
+        throw new Error(`Invalid period: ${period}. Must be one of: 'all', 'today', 'week', 'month'`);
     }
-
-    return {
-      where: 'timestamp >= ?',
-      params: [startDate.toISOString()]
-    };
   }
 
   async close() {

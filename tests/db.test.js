@@ -140,14 +140,53 @@ describe('Database', () => {
       cost_inr: 425.00
     });
 
-    const totalSpend = await db.getTotalSpend('daily');
-    expect(totalSpend.total_usd).toBe(15.00);
-    expect(totalSpend.total_inr).toBe(1275.00);
-    expect(totalSpend.call_count).toBe(2);
+    const totalSpend = await db.getTotalSpend('today');
+    expect(totalSpend).toBe(1275.00);
 
     const byProvider = await db.getSpendByProvider();
     expect(byProvider.length).toBe(2);
     expect(byProvider[0].provider).toBe('openai');
-    expect(byProvider[0].total_usd).toBe(10.00);
+    expect(byProvider[0].total_cost).toBe(850.00);
+
+    const byProject = await db.getSpendByProject();
+    expect(Array.isArray(byProject)).toBe(true);
+  });
+
+  test('getTotalSpend handles all periods', async () => {
+    await db.logApiCall({
+      provider: 'openai',
+      endpoint: '/v1/chat/completions',
+      cost_inr: 500.00
+    });
+
+    const allPeriods = await db.getTotalSpend('all');
+    expect(allPeriods).toBe(500.00);
+
+    const today = await db.getTotalSpend('today');
+    expect(today).toBe(500.00);
+
+    const week = await db.getTotalSpend('week');
+    expect(week).toBe(500.00);
+
+    const month = await db.getTotalSpend('month');
+    expect(month).toBe(500.00);
+  });
+
+  test('deleteApiKey throws on non-existent ID', async () => {
+    await expect(db.deleteApiKey(999)).rejects.toThrow(
+      'API key with id 999 not found'
+    );
+  });
+
+  test('endSession throws on non-existent session', async () => {
+    await expect(db.endSession(999)).rejects.toThrow(
+      'Session with id 999 not found'
+    );
+  });
+
+  test('getTotalSpend throws on invalid period', async () => {
+    await expect(db.getTotalSpend('invalid')).rejects.toThrow(
+      "Invalid period: invalid. Must be one of: 'all', 'today', 'week', 'month'"
+    );
   });
 });

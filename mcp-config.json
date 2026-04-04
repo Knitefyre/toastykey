@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "toastykey": {
+      "command": "node",
+      "args": [
+        "/Users/bakatoast/Toasty OS/toastykey/src/index.js",
+        "mcp"
+      ],
+      "env": {}
+    }
+  }
+}

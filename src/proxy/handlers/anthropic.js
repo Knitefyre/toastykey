@@ -13,7 +13,7 @@ const axios = require('axios');
  * @param {Object} vault - Key vault instance
  * @param {Object} pricing - Pricing engine instance
  */
-async function handleAnthropic(req, res, db, vault, pricing) {
+async function handleAnthropic(req, res, db, vault, pricing, wsServer) {
   const startTime = Date.now();
 
   try {
@@ -109,6 +109,21 @@ async function handleAnthropic(req, res, db, vault, pricing) {
           data: anthropicResponse.data
         })
       });
+
+      // Emit WebSocket event for real-time updates
+      if (wsServer) {
+        wsServer.emitApiCall({
+          provider: 'anthropic',
+          endpoint: apiPath,
+          model,
+          cost_inr: cost.inr,
+          cost_usd: cost.usd,
+          status: anthropicResponse.status,
+          latency_ms: latency,
+          timestamp: new Date().toISOString(),
+          project: req.toastykey?.project || null
+        });
+      }
     } catch (dbError) {
       // Log error but don't fail the request
       console.error('Failed to log API call to database:', dbError.message);

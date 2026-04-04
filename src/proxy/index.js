@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const WebSocketServer = require('./websocket');
 const { detectProject, checkBudgets } = require('./middleware');
 
 class ProxyServer {
@@ -10,6 +12,9 @@ class ProxyServer {
     this.port = port;
 
     this.app = express();
+    this.httpServer = http.createServer(this.app);
+    this.wsServer = new WebSocketServer(this.httpServer);
+
     this.setupMiddleware();
     this.setupRoutes();
   }
@@ -34,7 +39,7 @@ class ProxyServer {
       res.json({
         status: 'ok',
         service: 'toastykey-proxy',
-        version: '0.1.0',
+        version: '0.2.0',
         uptime: process.uptime()
       });
     });
@@ -73,6 +78,13 @@ class ProxyServer {
         const result = await this.vault.addKey(provider, label, key);
 
         if (result.success) {
+          // Emit WebSocket event
+          this.wsServer.emitVaultUpdate('added', {
+            provider,
+            label,
+            key_id: result.id
+          });
+
           res.json({
             success: true,
             message: `Key added for ${provider} (${label})`,
@@ -101,20 +113,20 @@ class ProxyServer {
     // OpenAI proxy
     const { handleOpenAI } = require('./handlers/openai');
     this.app.all('/openai/*', (req, res) => {
-      handleOpenAI(req, res, this.db, this.vault, this.pricing);
+      handleOpenAI(req, res, this.db, this.vault, this.pricing, this.wsServer);
     });
 
     // Anthropic proxy
     const { handleAnthropic } = require('./handlers/anthropic');
     this.app.all('/anthropic/*', (req, res) => {
-      handleAnthropic(req, res, this.db, this.vault, this.pricing);
+      handleAnthropic(req, res, this.db, this.vault, this.pricing, this.wsServer);
     });
   }
 
   start() {
     return new Promise((resolve) => {
-      this.server = this.app.listen(this.port, () => {
-        console.log(`Proxy running on http://localhost:${this.port}`);
+      this.httpServer.listen(this.port, () => {
+        console.log(`Proxy + WebSocket running on http://localhost:${this.port}`);
         resolve();
       });
     });
@@ -122,8 +134,8 @@ class ProxyServer {
 
   stop() {
     return new Promise((resolve) => {
-      if (this.server) {
-        this.server.close(resolve);
+      if (this.httpServer) {
+        this.httpServer.close(resolve);
       } else {
         resolve();
       }

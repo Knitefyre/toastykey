@@ -44,6 +44,10 @@ class ProxyServer {
       });
     });
 
+    // API routes for dashboard
+    const createStatsRouter = require('./api/stats');
+    this.app.use('/api/stats', createStatsRouter(this.db));
+
     // Stats endpoint
     this.app.get('/stats', async (req, res) => {
       try {

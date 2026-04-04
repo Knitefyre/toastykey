@@ -58,6 +58,46 @@ class ProxyServer {
       }
     });
 
+    // Vault management endpoints
+    this.app.post('/vault/add', async (req, res) => {
+      try {
+        const { provider, label, key } = req.body;
+
+        if (!provider || !label || !key) {
+          return res.status(400).json({
+            error: 'Missing required fields',
+            required: ['provider', 'label', 'key']
+          });
+        }
+
+        const result = await this.vault.addKey(provider, label, key);
+
+        if (result.success) {
+          res.json({
+            success: true,
+            message: `Key added for ${provider} (${label})`,
+            key_id: result.id
+          });
+        } else {
+          res.status(500).json({
+            success: false,
+            error: result.error
+          });
+        }
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
+    this.app.get('/vault/list', async (req, res) => {
+      try {
+        const keys = await this.vault.listKeys();
+        res.json({ keys });
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    });
+
     // OpenAI proxy
     const { handleOpenAI } = require('./handlers/openai');
     this.app.all('/openai/*', (req, res) => {

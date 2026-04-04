@@ -48,6 +48,9 @@ class ProxyServer {
     const createStatsRouter = require('./api/stats');
     this.app.use('/api/stats', createStatsRouter(this.db));
 
+    const createProjectsRouter = require('./api/projects');
+    this.app.use('/api/projects', createProjectsRouter(this.db));
+
     // Stats endpoint
     this.app.get('/stats', async (req, res) => {
       try {

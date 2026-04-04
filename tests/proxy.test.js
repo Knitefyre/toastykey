@@ -24,7 +24,7 @@ describe('ProxyServer', () => {
   });
 
   test('server responds to health check', async () => {
-    const response = await request(app).get('/health');
+    const response = await request(app).get('/api/health');
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty('status', 'ok');
@@ -32,7 +32,7 @@ describe('ProxyServer', () => {
 
   test('server has CORS enabled', async () => {
     const response = await request(app)
-      .options('/health')
+      .options('/api/health')
       .set('Origin', 'http://localhost:3000');
 
     expect(response.headers['access-control-allow-origin']).toBeDefined();

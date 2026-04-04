@@ -35,10 +35,10 @@ class ProxyServer {
 
   setupRoutes() {
     // Health check
-    this.app.get('/health', (req, res) => {
+    this.app.get('/api/health', (req, res) => {
       res.json({
         status: 'ok',
-        service: 'toastykey-proxy',
+        service: 'toastykey-api',
         version: '0.2.0',
         uptime: process.uptime()
       });
@@ -50,6 +50,15 @@ class ProxyServer {
 
     const createProjectsRouter = require('./api/projects');
     this.app.use('/api/projects', createProjectsRouter(this.db));
+
+    const createVaultRouter = require('./api/vault');
+    this.app.use('/api/vault', createVaultRouter(this.db, this.vault, this.wsServer));
+
+    const createBudgetsRouter = require('./api/budgets');
+    this.app.use('/api/budgets', createBudgetsRouter(this.db));
+
+    const createSetupRouter = require('./api/setup');
+    this.app.use('/api/setup', createSetupRouter(this.db));
 
     // Stats endpoint
     this.app.get('/stats', async (req, res) => {
@@ -65,53 +74,6 @@ class ProxyServer {
         };
 
         res.json(stats);
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-
-    // Vault management endpoints
-    this.app.post('/vault/add', async (req, res) => {
-      try {
-        const { provider, label, key } = req.body;
-
-        if (!provider || !label || !key) {
-          return res.status(400).json({
-            error: 'Missing required fields',
-            required: ['provider', 'label', 'key']
-          });
-        }
-
-        const result = await this.vault.addKey(provider, label, key);
-
-        if (result.success) {
-          // Emit WebSocket event
-          this.wsServer.emitVaultUpdate('added', {
-            provider,
-            label,
-            key_id: result.id
-          });
-
-          res.json({
-            success: true,
-            message: `Key added for ${provider} (${label})`,
-            key_id: result.id
-          });
-        } else {
-          res.status(500).json({
-            success: false,
-            error: result.error
-          });
-        }
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-
-    this.app.get('/vault/list', async (req, res) => {
-      try {
-        const keys = await this.vault.listKeys();
-        res.json({ keys });
       } catch (error) {
         res.status(500).json({ error: error.message });
       }

@@ -1,0 +1,31 @@
+{
+  "provider": "anthropic",
+  "updated": "2026-04-04",
+  "models": {
+    "claude-opus-4-20250514": {
+      "input": 0.015,
+      "output": 0.075,
+      "unit": "1k_tokens"
+    },
+    "claude-sonnet-4-20250514": {
+      "input": 0.003,
+      "output": 0.015,
+      "unit": "1k_tokens"
+    },
+    "claude-haiku-4-20250323": {
+      "input": 0.0008,
+      "output": 0.004,
+      "unit": "1k_tokens"
+    },
+    "claude-3-5-sonnet-20241022": {
+      "input": 0.003,
+      "output": 0.015,
+      "unit": "1k_tokens"
+    },
+    "claude-3-5-haiku-20241022": {
+      "input": 0.0008,
+      "output": 0.004,
+      "unit": "1k_tokens"
+    }
+  }
+}

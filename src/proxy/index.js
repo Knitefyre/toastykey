@@ -58,7 +58,11 @@ class ProxyServer {
       }
     });
 
-    // Provider proxy routes will be added in next tasks
+    // OpenAI proxy
+    const { handleOpenAI } = require('./handlers/openai');
+    this.app.all('/openai/*', (req, res) => {
+      handleOpenAI(req, res, this.db, this.vault, this.pricing);
+    });
   }
 
   start() {

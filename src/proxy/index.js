@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
+const path = require('path');
 const WebSocketServer = require('./websocket');
 const { detectProject, checkBudgets } = require('./middleware');
 
@@ -78,6 +79,23 @@ class ProxyServer {
         res.status(500).json({ error: error.message });
       }
     });
+
+    // Serve dashboard static files in production
+    if (process.env.NODE_ENV === 'production') {
+      const dashboardPath = path.join(__dirname, '../dashboard/dist');
+
+      // Serve static assets
+      this.app.use(express.static(dashboardPath));
+
+      // SPA fallback - serve index.html for all non-API routes
+      this.app.get('*', (req, res, next) => {
+        // Skip API and proxy routes
+        if (req.path.startsWith('/api/') || req.path.startsWith('/openai') || req.path.startsWith('/anthropic') || req.path === '/stats') {
+          return next();
+        }
+        res.sendFile(path.join(dashboardPath, 'index.html'));
+      });
+    }
 
     // OpenAI proxy
     const { handleOpenAI } = require('./handlers/openai');

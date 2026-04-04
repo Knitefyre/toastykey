@@ -111,7 +111,29 @@ export const healthAPI = {
   check: () => apiFetch('/api/health'),
 };
 
-// Export all APIs
+// Convenience exports for direct function imports
+export const getStats = () => statsAPI.getOverview();
+export const getDailySpend = (days = 30) => statsAPI.getDaily(days);
+export const getProviderBreakdown = () => statsAPI.getProviders();
+export const getTangibleOutputs = () => statsAPI.getTangible();
+export const getRecentCalls = (limit = 20, offset = 0) => statsAPI.getCalls(limit, offset);
+
+export const getProjects = () => projectsAPI.getAll();
+export const getProject = (id) => projectsAPI.getById(id);
+
+export const getKeys = () => vaultAPI.getKeys();
+export const addKey = (data) => vaultAPI.addKey(data.provider, data.label, data.key);
+export const deleteKey = (id) => vaultAPI.deleteKey(id);
+export const revealKey = (id) => vaultAPI.revealKey(id);
+export const importEnv = (content) => vaultAPI.importEnv(content);
+
+export const getBudgets = () => budgetsAPI.getAll();
+export const setBudget = (data) => budgetsAPI.createOrUpdate(data.scope, data.period, data.limit, data.entity_id);
+
+export const getSetupStatus = () => setupAPI.getStatus();
+export const scanForEnv = (directories) => setupAPI.scanDirectories(directories);
+
+// Export all APIs as default
 export default {
   stats: statsAPI,
   projects: projectsAPI,

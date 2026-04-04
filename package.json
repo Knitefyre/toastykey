@@ -5,7 +5,14 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "test": "jest"
+    "mcp": "node src/index.js mcp",
+    "test": "jest",
+    "dashboard:dev": "cd src/dashboard && npm run dev",
+    "dashboard:build": "cd src/dashboard && npm run build",
+    "dashboard:install": "cd src/dashboard && npm install",
+    "dev": "concurrently \"npm start\" \"npm run dashboard:dev\"",
+    "build": "npm run dashboard:build",
+    "start:prod": "NODE_ENV=production npm start"
   },
   "keywords": [
     "api-costs",
@@ -21,10 +28,12 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "socket.io": "^4.8.3",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
+    "concurrently": "^8.2.2",
     "jest": "^29.7.0",
     "supertest": "^7.2.2"
   }

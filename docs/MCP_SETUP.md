@@ -63,7 +63,7 @@ User: "sk-proj-abc123..."
 Claude: [calls add_key with provider="openai", label="default"]
 
 User: "Set a daily budget of 500 rupees"
-Claude: [calls set_budget with scope="global", period="daily", limit=500]
+Claude: [calls set_budget with scope="global", period="day", limit=500]
 ```
 
 ## Troubleshooting

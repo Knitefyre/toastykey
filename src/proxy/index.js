@@ -63,6 +63,12 @@ class ProxyServer {
     this.app.all('/openai/*', (req, res) => {
       handleOpenAI(req, res, this.db, this.vault, this.pricing);
     });
+
+    // Anthropic proxy
+    const { handleAnthropic } = require('./handlers/anthropic');
+    this.app.all('/anthropic/*', (req, res) => {
+      handleAnthropic(req, res, this.db, this.vault, this.pricing);
+    });
   }
 
   start() {

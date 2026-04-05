@@ -4,6 +4,8 @@ const http = require('http');
 const path = require('path');
 const WebSocketServer = require('./websocket');
 const { detectProject, checkBudgets, checkPauseState } = require('./middleware');
+const { AnomalyDetector } = require('../triggers');
+const { BaselineCalculator, BaselineStorage } = require('../baselines');
 
 class ProxyServer {
   constructor(database, vault, pricing, port = 4000) {
@@ -15,6 +17,11 @@ class ProxyServer {
     this.app = express();
     this.httpServer = http.createServer(this.app);
     this.wsServer = new WebSocketServer(this.httpServer);
+
+    // Initialize subsystems
+    this.baselines = new BaselineStorage(this.db);
+    this.baselineCalculator = new BaselineCalculator(this.db);
+    this.anomalyDetector = new AnomalyDetector(this.db, this.wsServer, this.baselines);
 
     this.setupMiddleware();
     this.setupRoutes();
@@ -120,6 +127,11 @@ class ProxyServer {
     return new Promise((resolve) => {
       this.httpServer.listen(this.port, () => {
         console.log(`Proxy + WebSocket running on http://localhost:${this.port}`);
+
+        // Start subsystems
+        this.baselineCalculator.start();
+        this.anomalyDetector.start();
+
         resolve();
       });
     });
@@ -127,6 +139,10 @@ class ProxyServer {
 
   stop() {
     return new Promise((resolve) => {
+      // Stop subsystems
+      this.anomalyDetector.stop();
+      this.baselineCalculator.stop();
+
       if (this.httpServer) {
         this.httpServer.close(resolve);
       } else {

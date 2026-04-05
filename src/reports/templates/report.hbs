@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToastyKey Report - {{period}}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Fira Sans', -apple-system, system-ui, sans-serif;
+      background: #0F172A;
+      color: #F8FAFC;
+      line-height: 1.6;
+      padding: 2rem;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .card {
+      background: #1B2336;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; color: #22C55E; }
+    h2 { font-size: 1.5rem; margin-bottom: 1rem; color: #F8FAFC; }
+    .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .stat { background: #272F42; padding: 1rem; border-radius: 6px; }
+    .stat-label { color: #94A3B8; font-size: 0.875rem; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #F8FAFC; margin-top: 0.5rem; }
+    .trend { display: inline-block; margin-left: 0.5rem; }
+    .trend.up { color: #22C55E; }
+    .trend.down { color: #EF4444; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { text-align: left; padding: 0.75rem; border-bottom: 1px solid #475569; }
+    th { color: #94A3B8; font-weight: 600; }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    .badge-warning { background: #F59E0B; color: #000; }
+    .badge-suggestion { background: #3B82F6; color: #fff; }
+    .recommendation {
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border-left: 3px solid;
+      background: #272F42;
+    }
+    .recommendation.warning { border-color: #F59E0B; }
+    .recommendation.suggestion { border-color: #3B82F6; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    {{> header}}
+    {{> summary}}
+    {{> breakdown}}
+    {{> trends}}
+    {{> anomalies}}
+    {{> recommendations}}
+  </div>
+</body>
+</html>

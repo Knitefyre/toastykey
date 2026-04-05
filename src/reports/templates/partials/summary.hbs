@@ -1,0 +1,25 @@
+<div class="card">
+  <h2>Summary</h2>
+  <div class="summary">
+    <div class="stat">
+      <div class="stat-label">Total Spend (USD)</div>
+      <div class="stat-value">{{formatCurrency summary.total_usd 'USD'}}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Total Spend (INR)</div>
+      <div class="stat-value">{{formatCurrency summary.total_inr 'INR'}}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">API Calls</div>
+      <div class="stat-value">{{summary.total_calls}}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Providers</div>
+      <div class="stat-value">{{summary.provider_count}}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Projects</div>
+      <div class="stat-value">{{summary.project_count}}</div>
+    </div>
+  </div>
+</div>

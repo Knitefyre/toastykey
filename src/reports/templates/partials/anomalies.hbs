@@ -1,0 +1,27 @@
+{{#if anomalies.length}}
+<div class="card">
+  <h2>Anomaly Events</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Entity</th>
+        <th>Metric</th>
+        <th>Baseline</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each anomalies}}
+      <tr>
+        <td>{{this.trigger_type}}</td>
+        <td>{{this.entity_type}}/{{this.entity_id}}</td>
+        <td>{{this.metric_value}}</td>
+        <td>{{this.baseline_value}}</td>
+        <td>{{this.timestamp}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/if}}

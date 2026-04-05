@@ -1,0 +1,21 @@
+<div class="card">
+  <h2>Trend Analysis</h2>
+  <div class="summary">
+    <div class="stat">
+      <div class="stat-label">Current Period</div>
+      <div class="stat-value">{{formatCurrency trends.current 'USD'}}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Previous Period</div>
+      <div class="stat-value">{{formatCurrency trends.previous 'USD'}}</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Change</div>
+      <div class="stat-value">
+        <span class="trend {{trends.direction}}">
+          {{trendIcon trends.change}} {{formatPercent trends.change}}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,75 @@
+<div class="card">
+  <h2>Provider Breakdown</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Provider</th>
+        <th>Cost (USD)</th>
+        <th>Calls</th>
+        <th>% of Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each providers}}
+      <tr>
+        <td>{{this.provider}}</td>
+        <td>{{formatCurrency this.cost 'USD'}}</td>
+        <td>{{this.calls}}</td>
+        <td>{{formatPercent this.percentage}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+
+{{#if projects.length}}
+<div class="card">
+  <h2>Project Breakdown</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Project</th>
+        <th>Cost (USD)</th>
+        <th>Calls</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each projects}}
+      <tr>
+        <td>{{this.project}}</td>
+        <td>{{formatCurrency this.cost 'USD'}}</td>
+        <td>{{this.calls}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/if}}
+
+{{#if top_calls.length}}
+<div class="card">
+  <h2>Top 5 Expensive Calls</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Provider</th>
+        <th>Model</th>
+        <th>Cost</th>
+        <th>Tokens</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each top_calls}}
+      <tr>
+        <td>{{this.provider}}</td>
+        <td>{{this.model}}</td>
+        <td>{{formatCurrency this.cost_usd 'USD'}}</td>
+        <td>{{this.tokens}}</td>
+        <td>{{this.timestamp}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</div>
+{{/if}}

@@ -6,6 +6,7 @@ const WebSocketServer = require('./websocket');
 const { detectProject, checkBudgets, checkPauseState } = require('./middleware');
 const { AnomalyDetector } = require('../triggers');
 const { BaselineCalculator, BaselineStorage } = require('../baselines');
+const { ReportGenerator, ReportScheduler } = require('../reports');
 
 class ProxyServer {
   constructor(database, vault, pricing, port = 4000) {
@@ -22,6 +23,8 @@ class ProxyServer {
     this.baselines = new BaselineStorage(this.db);
     this.baselineCalculator = new BaselineCalculator(this.db);
     this.anomalyDetector = new AnomalyDetector(this.db, this.wsServer, this.baselines);
+    this.reportGenerator = new ReportGenerator(this.db);
+    this.reportScheduler = new ReportScheduler(this.db, this.reportGenerator);
 
     this.setupMiddleware();
     this.setupRoutes();
@@ -74,6 +77,9 @@ class ProxyServer {
     const createTriggersRouter = require('./api/triggers');
     this.app.use('/api/triggers', createTriggersRouter(this.db, this.wsServer));
 
+    const createReportsRouter = require('./api/reports');
+    this.app.use('/api/reports', createReportsRouter(this.db, this.reportGenerator));
+
     // Stats endpoint
     this.app.get('/stats', async (req, res) => {
       try {
@@ -123,14 +129,16 @@ class ProxyServer {
     });
   }
 
-  start() {
-    return new Promise((resolve) => {
-      this.httpServer.listen(this.port, () => {
+  async start() {
+    return new Promise(async (resolve) => {
+      this.httpServer.listen(this.port, async () => {
         console.log(`Proxy + WebSocket running on http://localhost:${this.port}`);
 
         // Start subsystems
+        await this.reportGenerator.initialize();
         this.baselineCalculator.start();
         this.anomalyDetector.start();
+        this.reportScheduler.start({ auto_generate: false }); // Disable auto-generation by default
 
         resolve();
       });
@@ -142,6 +150,7 @@ class ProxyServer {
       // Stop subsystems
       this.anomalyDetector.stop();
       this.baselineCalculator.stop();
+      this.reportScheduler.stop();
 
       if (this.httpServer) {
         this.httpServer.close(resolve);

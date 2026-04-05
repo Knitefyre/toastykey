@@ -266,6 +266,21 @@ async function runMigrations(db) {
     await db.run(`ALTER TABLE budgets ADD COLUMN enforce INTEGER DEFAULT 0`);
     console.log('[Migration] Added columns to budgets table');
   }
+
+  // Create reports table
+  const reportsExists = await db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='reports'");
+  if (!reportsExists) {
+    await db.run(`
+      CREATE TABLE reports (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        period TEXT NOT NULL,
+        html_content TEXT,
+        summary_json TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('[Migration] Created reports table');
+  }
 }
 
 module.exports.createTables = createTables;

@@ -1,0 +1,11 @@
+{{#if recommendations.length}}
+<div class="card">
+  <h2>Recommendations</h2>
+  {{#each recommendations}}
+  <div class="recommendation {{this.type}}">
+    <span class="badge badge-{{this.type}}">{{this.category}}</span>
+    <p style="margin-top: 0.5rem;">{{this.message}}</p>
+  </div>
+  {{/each}}
+</div>
+{{/if}}

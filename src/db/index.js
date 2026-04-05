@@ -60,6 +60,9 @@ class ToastyKeyDB {
       for (const indexSQL of schema.indexes) {
         await this.db.run(indexSQL);
       }
+
+      // Run migrations
+      await schema.runMigrations(this.db);
     } catch (err) {
       throw new Error(`Failed to initialize schema: ${err.message}`);
     }
@@ -291,6 +294,205 @@ class ToastyKeyDB {
     }
 
     return result.changes;
+  }
+
+  // ============ BASELINES ============
+
+  async createBaseline(data) {
+    const {
+      date,
+      scope,
+      scope_id = null,
+      metric,
+      value,
+      sample_size
+    } = data;
+
+    const result = await this.db.run(
+      `INSERT OR REPLACE INTO baselines (date, scope, scope_id, metric, value, sample_size)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [date, scope, scope_id, metric, value, sample_size]
+    );
+
+    return result.lastID;
+  }
+
+  async getBaseline(scope, scopeId, metric, daysBack = 7) {
+    const date = new Date();
+    date.setDate(date.getDate() - daysBack);
+    const dateStr = date.toISOString().split('T')[0];
+
+    let query = `SELECT * FROM baselines WHERE scope = ? AND metric = ? AND date >= ?`;
+    const params = [scope, metric, dateStr];
+
+    if (scopeId === null || scopeId === undefined) {
+      query += ` AND scope_id IS NULL`;
+    } else {
+      query += ` AND scope_id = ?`;
+      params.push(scopeId);
+    }
+
+    query += ` ORDER BY date DESC LIMIT 1`;
+    return await this.db.get(query, params);
+  }
+
+  async getBaselines(scope, scopeId, metric, days = 30) {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    const dateStr = date.toISOString().split('T')[0];
+
+    let query = `SELECT * FROM baselines WHERE scope = ? AND metric = ? AND date >= ?`;
+    const params = [scope, metric, dateStr];
+
+    if (scopeId === null || scopeId === undefined) {
+      query += ` AND scope_id IS NULL`;
+    } else {
+      query += ` AND scope_id = ?`;
+      params.push(scopeId);
+    }
+
+    query += ` ORDER BY date ASC`;
+    return await this.db.all(query, params);
+  }
+
+  // ============ PAUSE STATES ============
+
+  async pauseEntity(data) {
+    const {
+      entity_type,
+      entity_id,
+      paused_by_trigger_id = null,
+      reason = null
+    } = data;
+
+    const result = await this.db.run(
+      `INSERT OR REPLACE INTO pause_states (entity_type, entity_id, paused_by_trigger_id, reason, paused_at)
+       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      [entity_type, entity_id, paused_by_trigger_id, reason]
+    );
+
+    return result.lastID;
+  }
+
+  async resumeEntity(entityType, entityId) {
+    const result = await this.db.run(
+      `DELETE FROM pause_states WHERE entity_type = ? AND entity_id = ?`,
+      [entityType, entityId]
+    );
+
+    if (result.changes === 0) {
+      throw new Error(`No pause state found for ${entityType}:${entityId}`);
+    }
+
+    return result.changes;
+  }
+
+  async isPaused(entityType, entityId) {
+    const result = await this.db.get(
+      `SELECT * FROM pause_states WHERE entity_type = ? AND entity_id = ?`,
+      [entityType, entityId]
+    );
+
+    return result !== undefined;
+  }
+
+  async getPauseState(entityType, entityId) {
+    return await this.db.get(
+      `SELECT * FROM pause_states WHERE entity_type = ? AND entity_id = ?`,
+      [entityType, entityId]
+    );
+  }
+
+  async getAllPausedEntities() {
+    return await this.db.all(
+      `SELECT * FROM pause_states ORDER BY paused_at DESC`
+    );
+  }
+
+  // ============ CUSTOM PROVIDERS ============
+
+  async createCustomProvider(data) {
+    const {
+      name,
+      base_url,
+      auth_method,
+      auth_header = null,
+      cost_per_request = null
+    } = data;
+
+    const result = await this.db.run(
+      `INSERT INTO custom_providers (name, base_url, auth_method, auth_header, cost_per_request)
+       VALUES (?, ?, ?, ?, ?)`,
+      [name, base_url, auth_method, auth_header, cost_per_request]
+    );
+
+    return result.lastID;
+  }
+
+  async getCustomProvider(name) {
+    return await this.db.get(
+      `SELECT * FROM custom_providers WHERE name = ?`,
+      [name]
+    );
+  }
+
+  async listCustomProviders() {
+    return await this.db.all(
+      `SELECT * FROM custom_providers ORDER BY name`
+    );
+  }
+
+  async deleteCustomProvider(id) {
+    const result = await this.db.run(
+      `DELETE FROM custom_providers WHERE id = ?`,
+      [id]
+    );
+
+    if (result.changes === 0) {
+      throw new Error(`Custom provider with id ${id} not found`);
+    }
+
+    return result.changes;
+  }
+
+  // ============ BUDGET OVERRIDES ============
+
+  async createBudgetOverride(data) {
+    const {
+      budget_id,
+      additional_amount,
+      reason = null,
+      expires_at = null
+    } = data;
+
+    const result = await this.db.run(
+      `INSERT INTO budget_overrides (budget_id, additional_amount, reason, expires_at)
+       VALUES (?, ?, ?, ?)`,
+      [budget_id, additional_amount, reason, expires_at]
+    );
+
+    return result.lastID;
+  }
+
+  async getActiveBudgetOverride(budgetId) {
+    return await this.db.get(
+      `SELECT * FROM budget_overrides
+       WHERE budget_id = ?
+       AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [budgetId]
+    );
+  }
+
+  async listBudgetOverrides(budgetId) {
+    return await this.db.all(
+      `SELECT * FROM budget_overrides
+       WHERE budget_id = ?
+       AND (expires_at IS NULL OR expires_at > CURRENT_TIMESTAMP)
+       ORDER BY created_at DESC`,
+      [budgetId]
+    );
   }
 
   // ============ AGGREGATIONS ============

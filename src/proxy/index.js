@@ -7,6 +7,7 @@ const { detectProject, checkBudgets, checkPauseState } = require('./middleware')
 const { AnomalyDetector } = require('../triggers');
 const { BaselineCalculator, BaselineStorage } = require('../baselines');
 const { ReportGenerator, ReportScheduler } = require('../reports');
+const cron = require('node-cron');
 
 class ProxyServer {
   constructor(database, vault, pricing, port = 4000) {
@@ -44,7 +45,7 @@ class ProxyServer {
     this.app.use(checkPauseState(this.db));
 
     // Budget checking
-    this.app.use(checkBudgets(this.db));
+    this.app.use(checkBudgets(this.db, this.wsServer));
   }
 
   setupRoutes() {
@@ -179,6 +180,32 @@ class ProxyServer {
     });
   }
 
+  setupBudgetReset() {
+    // Daily reset at midnight
+    cron.schedule('0 0 * * *', async () => {
+      console.log('[BudgetReset] Running daily budget reset');
+      try {
+        // Delete expired overrides
+        await this.db.run(`DELETE FROM budget_overrides WHERE expires_at < datetime('now')`);
+
+        // Reset daily budgets (nothing to do - they auto-reset based on queries)
+        console.log('[BudgetReset] Daily reset complete');
+      } catch (error) {
+        console.error('[BudgetReset] Error:', error.message);
+      }
+    });
+
+    // Weekly reset on Monday at midnight
+    cron.schedule('0 0 * * 1', async () => {
+      console.log('[BudgetReset] Running weekly budget reset');
+    });
+
+    // Monthly reset on 1st at midnight
+    cron.schedule('0 0 1 * *', async () => {
+      console.log('[BudgetReset] Running monthly budget reset');
+    });
+  }
+
   async start() {
     return new Promise(async (resolve) => {
       this.httpServer.listen(this.port, async () => {
@@ -189,6 +216,7 @@ class ProxyServer {
         this.baselineCalculator.start();
         this.anomalyDetector.start();
         this.reportScheduler.start({ auto_generate: false }); // Disable auto-generation by default
+        this.setupBudgetReset();
 
         resolve();
       });

@@ -96,6 +96,42 @@ function createBudgetsRouter(db) {
     }
   });
 
+  // POST /api/budgets/override/:id - Temporary limit increase
+  router.post('/override/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { new_limit_usd, expires_in_hours = 24 } = req.body;
+
+      if (!new_limit_usd) {
+        return res.status(400).json({
+          error: 'Missing required field: new_limit_usd'
+        });
+      }
+
+      const budget = await db.db.get('SELECT * FROM budgets WHERE id = ?', [id]);
+      if (!budget) {
+        return res.status(404).json({ error: 'Budget not found' });
+      }
+
+      // Create budget override
+      const expiresAt = new Date(Date.now() + expires_in_hours * 60 * 60 * 1000).toISOString();
+
+      const result = await db.db.run(`
+        INSERT INTO budget_overrides (budget_id, new_limit_usd, expires_at)
+        VALUES (?, ?, ?)
+      `, [id, new_limit_usd, expiresAt]);
+
+      res.json({
+        success: true,
+        override_id: result.lastID,
+        expires_at: expiresAt,
+        message: `Budget limit temporarily increased to $${new_limit_usd} until ${expiresAt}`
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return router;
 }
 

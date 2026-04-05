@@ -17,14 +17,85 @@ function detectProject(db) {
   };
 }
 
-function checkBudgets(db) {
+function checkBudgets(db, wsServer) {
   return async (req, res, next) => {
-    // For Session 1, basic checking
-    const todaySpend = await db.getTotalSpend('today');
+    try {
+      // Get active budgets with enforcement enabled
+      const budgets = await db.all('SELECT * FROM budgets WHERE active = 1 AND enforce = 1');
 
-    req.toastykey.currentSpend = todaySpend;
+      if (budgets.length === 0) {
+        // No enforcement, just track
+        const todaySpend = await db.getTotalSpend('today');
+        req.toastykey = req.toastykey || {};
+        req.toastykey.currentSpend = todaySpend;
+        return next();
+      }
 
-    next();
+      // Check each budget
+      for (const budget of budgets) {
+        let spend;
+        if (budget.period === 'daily') {
+          spend = await db.getTotalSpend('today');
+        } else if (budget.period === 'weekly') {
+          spend = await db.getTotalSpend('week');
+        } else if (budget.period === 'monthly') {
+          spend = await db.getTotalSpend('month');
+        } else {
+          continue;
+        }
+
+        const percentage = (spend / budget.limit_usd) * 100;
+
+        // Check for budget override
+        const override = await db.getActiveBudgetOverride(budget.id);
+        const effectiveLimit = override ? override.new_limit_usd : budget.limit_usd;
+        const effectivePercentage = (spend / effectiveLimit) * 100;
+
+        // Emit warnings
+        if (effectivePercentage >= budget.notify_at_percent && effectivePercentage < 100 && wsServer) {
+          wsServer.emit('budget_warning', {
+            budget_id: budget.id,
+            period: budget.period,
+            spent: spend,
+            limit: effectiveLimit,
+            percentage: effectivePercentage,
+            threshold: budget.notify_at_percent
+          });
+        }
+
+        // Block at 100%
+        if (effectivePercentage >= 100) {
+          if (wsServer) {
+            wsServer.emit('budget_exceeded', {
+              budget_id: budget.id,
+              period: budget.period,
+              spent: spend,
+              limit: effectiveLimit,
+              percentage: effectivePercentage
+            });
+          }
+
+          return res.status(429).json({
+            error: 'ToastyKey: Budget limit exceeded',
+            budget: {
+              period: budget.period,
+              limit_usd: effectiveLimit,
+              spent_usd: spend,
+              percentage: effectivePercentage.toFixed(1)
+            },
+            message: `Your ${budget.period} budget of $${effectiveLimit} has been exceeded. Current spend: $${spend.toFixed(2)}`,
+            override_endpoint: `/api/budgets/override/${budget.id}`
+          });
+        }
+      }
+
+      req.toastykey = req.toastykey || {};
+      req.toastykey.currentSpend = await db.getTotalSpend('today');
+      next();
+    } catch (error) {
+      console.error('[checkBudgets] Error:', error.message);
+      next(); // Don't block on error
+    }
   };
 }
 

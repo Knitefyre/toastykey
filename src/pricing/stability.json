@@ -1,0 +1,5 @@
+{
+  "stable-diffusion-xl": { "price": 0.040 },
+  "stable-diffusion-3": { "price": 0.065 },
+  "stable-diffusion-ultra": { "price": 0.080 }
+}

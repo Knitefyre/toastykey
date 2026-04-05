@@ -127,6 +127,56 @@ class ProxyServer {
     this.app.all('/anthropic/*', (req, res) => {
       handleAnthropic(req, res, this.db, this.vault, this.pricing, this.wsServer);
     });
+
+    // Additional provider handlers
+    this.setupNewProviders();
+  }
+
+  setupNewProviders() {
+    const ElevenLabsHandler = require('./handlers/elevenlabs');
+    const CartesiaHandler = require('./handlers/cartesia');
+    const ReplicateHandler = require('./handlers/replicate');
+    const StabilityHandler = require('./handlers/stability');
+    const GenericHandler = require('./handlers/generic');
+
+    const elevenLabs = new ElevenLabsHandler(this.vault, this.pricing);
+    const cartesia = new CartesiaHandler(this.vault, this.pricing);
+    const replicate = new ReplicateHandler(this.vault, this.pricing);
+    const stability = new StabilityHandler(this.vault, this.pricing);
+
+    this.app.all('/elevenlabs/*', (req, res) =>
+      elevenLabs.handle(req, res, this.db, this.wsServer)
+    );
+
+    this.app.all('/cartesia/*', (req, res) =>
+      cartesia.handle(req, res, this.db, this.wsServer)
+    );
+
+    this.app.all('/replicate/*', (req, res) =>
+      replicate.handle(req, res, this.db, this.wsServer)
+    );
+
+    this.app.all('/stability/*', (req, res) =>
+      stability.handle(req, res, this.db, this.wsServer)
+    );
+
+    // Generic/custom providers
+    this.app.all('/custom/:provider/*', async (req, res) => {
+      const providerName = req.params.provider;
+      const config = await this.db.get(
+        'SELECT * FROM custom_providers WHERE name = ?',
+        [providerName]
+      );
+
+      if (!config) {
+        return res.status(404).json({
+          error: `Custom provider '${providerName}' not configured`
+        });
+      }
+
+      const handler = new GenericHandler(config, this.vault, this.pricing);
+      await handler.handle(req, res, this.db, this.wsServer);
+    });
   }
 
   async start() {

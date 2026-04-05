@@ -4,7 +4,32 @@
       "Bash(npm install:*)",
       "Bash(rm:*)",
       "Bash(npm test:*)",
-      "Bash(npx jest:*)"
+      "Bash(npx jest:*)",
+      "Bash(node:*)",
+      "Bash(python3 scripts/search.py \"developer tool dashboard monitoring analytics dark terminal\" --design-system -p \"ToastyKey Dashboard\")",
+      "Bash(python3 scripts/search.py \"dashboard analytics dark mode developer\" --domain color -n 5)",
+      "Bash(python3 scripts/search.py \"dashboard realtime updates animation charts\" --domain ux -n 10)",
+      "Bash(python3 scripts/search.py \"area line bar chart spending analytics realtime\" --domain chart -n 5)",
+      "Bash(npm list:*)",
+      "Bash(timeout 5 npm start)",
+      "Bash(lsof -ti:4000)",
+      "Bash(xargs kill:*)",
+      "Bash(gtimeout 5 npm start)",
+      "Bash(curl -s http://localhost:4000/api/stats)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s \"http://localhost:4000/api/stats/daily?days=7\")",
+      "Bash(curl -s http://localhost:4000/api/stats/providers)",
+      "Bash(curl -s http://localhost:4000/api/stats/tangible)",
+      "Bash(curl -s \"http://localhost:4000/api/stats/calls?limit=5\")",
+      "Bash(kill 45491)",
+      "Bash(curl -s http://localhost:4000/api/projects/1)",
+      "Bash(pkill -f \"node src/index.js\")",
+      "Bash(mkdir:*)",
+      "Bash(timeout 10 npm run dev)",
+      "Bash(npm run:*)",
+      "Bash(pkill -f \"node.*toastykey\")",
+      "Bash(npm start:*)",
+      "Read(//tmp/**)"
     ]
   }
 }

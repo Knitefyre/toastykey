@@ -41,6 +41,7 @@ function AppContent() {
   const checkSetupStatus = async () => {
     try {
       const result = await getSetupStatus();
+      console.log('[App] Setup status check result:', result);
       setNeedsSetup(result.needs_setup === true);
     } catch (error) {
       console.error('Failed to check setup status:', error);
@@ -51,10 +52,14 @@ function AppContent() {
   };
 
   const handleSetupComplete = () => {
+    console.log('[App] Setup completed, setting needsSetup to false');
     setNeedsSetup(false);
   };
 
+  console.log('[App] Render state:', { loading, needsSetup });
+
   if (loading) {
+    console.log('[App] Showing loading screen');
     return (
       <div className="min-h-screen flex items-center justify-center bg-bg-primary">
         <div className="text-center">
@@ -68,9 +73,11 @@ function AppContent() {
   }
 
   if (needsSetup) {
+    console.log('[App] Showing setup wizard');
     return <SetupWizard onComplete={handleSetupComplete} />;
   }
 
+  console.log('[App] Showing dashboard');
   return (
     <>
       <Routes>

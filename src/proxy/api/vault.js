@@ -114,84 +114,57 @@ function createVaultRouter(db, vault, wsServer) {
     }
   });
 
-  // POST /api/vault/import-env - Import keys from environment variables
+  // POST /api/vault/import-env - Import keys from .env file content
   router.post('/import-env', async (req, res) => {
     try {
-      const { envVars } = req.body;
+      const { content } = req.body;
 
-      if (!envVars || typeof envVars !== 'object') {
+      if (!content || typeof content !== 'string') {
         return res.status(400).json({
-          error: 'Invalid request body',
-          expected: { envVars: { PROVIDER_LABEL: 'key_value' } }
+          error: 'Missing content field',
+          expected: { content: 'OPENAI_API_KEY=sk-...' }
         });
       }
 
-      const results = {
-        success: [],
-        failed: []
-      };
+      const found_keys = [];
+      const lines = content.split('\n');
 
-      for (const [envKey, value] of Object.entries(envVars)) {
+      for (const line of lines) {
+        const trimmed = line.trim();
+
+        // Skip empty lines and comments
+        if (!trimmed || trimmed.startsWith('#')) continue;
+
+        // Parse KEY=value format
+        const equalIndex = trimmed.indexOf('=');
+        if (equalIndex === -1) continue;
+
+        const envKey = trimmed.substring(0, equalIndex).trim();
+        const value = trimmed.substring(equalIndex + 1).trim();
+
         // Skip empty values
-        if (!value || typeof value !== 'string') {
-          results.failed.push({
-            key: envKey,
-            reason: 'Empty or invalid value'
+        if (!value) continue;
+
+        // Detect OpenAI keys
+        if (envKey.includes('OPENAI') && value.startsWith('sk-')) {
+          found_keys.push({
+            provider: 'openai',
+            label: 'default',
+            key: value
           });
-          continue;
         }
-
-        // Parse environment variable name (e.g., OPENAI_API_KEY -> provider: openai, label: api_key)
-        const parts = envKey.toLowerCase().split('_');
-
-        // Try to detect provider from key name
-        let provider = 'unknown';
-        let label = envKey.toLowerCase();
-
-        if (envKey.includes('OPENAI')) {
-          provider = 'openai';
-          label = parts.slice(1).join('_') || 'default';
-        } else if (envKey.includes('ANTHROPIC')) {
-          provider = 'anthropic';
-          label = parts.slice(1).join('_') || 'default';
-        } else if (envKey.includes('GOOGLE')) {
-          provider = 'google';
-          label = parts.slice(1).join('_') || 'default';
-        } else {
-          // Use first part as provider
-          provider = parts[0] || 'unknown';
-          label = parts.slice(1).join('_') || 'default';
-        }
-
-        const result = await vault.addKey(provider, label, value);
-
-        if (result.success) {
-          results.success.push({
-            key: envKey,
-            provider,
-            label,
-            id: result.id
-          });
-
-          // Emit WebSocket event
-          wsServer.emitVaultUpdate('added', {
-            provider,
-            label,
-            key_id: result.id
-          });
-        } else {
-          results.failed.push({
-            key: envKey,
-            reason: result.error
+        // Detect Anthropic keys
+        else if (envKey.includes('ANTHROPIC') && value.startsWith('sk-ant-')) {
+          found_keys.push({
+            provider: 'anthropic',
+            label: 'default',
+            key: value
           });
         }
       }
 
       res.json({
-        success: true,
-        imported: results.success.length,
-        failed: results.failed.length,
-        details: results
+        found_keys
       });
     } catch (error) {
       res.status(500).json({ error: error.message });

@@ -113,3 +113,160 @@ module.exports = {
     'CREATE INDEX IF NOT EXISTS idx_api_calls_session ON api_calls(session_id)'
   ]
 };
+
+/**
+ * Create all tables in the database
+ * @param {Object} db - Promisified sqlite3 database instance
+ */
+async function createTables(db) {
+  for (const tableSQL of module.exports.tables) {
+    await db.run(tableSQL);
+  }
+  for (const indexSQL of module.exports.indexes) {
+    await db.run(indexSQL);
+  }
+}
+
+/**
+ * Run database migrations to update schema
+ * @param {Object} db - Promisified sqlite3 database instance
+ */
+async function runMigrations(db) {
+  // Create baselines table
+  const baselinesExists = await db.get(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='baselines'"
+  );
+
+  if (!baselinesExists) {
+    await db.run(`
+      CREATE TABLE baselines (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL,
+        scope TEXT NOT NULL,
+        scope_id TEXT,
+        metric TEXT NOT NULL,
+        value REAL NOT NULL,
+        sample_size INTEGER NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(date, scope, scope_id, metric)
+      )
+    `);
+    await db.run(`CREATE INDEX idx_baselines_lookup ON baselines(scope, scope_id, metric, date)`);
+    console.log('[Migration] Created baselines table');
+  }
+
+  // Create pause_states table
+  const pauseStatesExists = await db.get(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='pause_states'"
+  );
+
+  if (!pauseStatesExists) {
+    await db.run(`
+      CREATE TABLE pause_states (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        entity_type TEXT NOT NULL,
+        entity_id TEXT NOT NULL,
+        paused_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        paused_by_trigger_id INTEGER,
+        reason TEXT,
+        UNIQUE(entity_type, entity_id)
+      )
+    `);
+    console.log('[Migration] Created pause_states table');
+  }
+
+  // Create custom_providers table
+  const customProvidersExists = await db.get(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='custom_providers'"
+  );
+
+  if (!customProvidersExists) {
+    await db.run(`
+      CREATE TABLE custom_providers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        base_url TEXT NOT NULL,
+        auth_method TEXT NOT NULL,
+        auth_header TEXT,
+        cost_per_request REAL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('[Migration] Created custom_providers table');
+  }
+
+  // Create budget_overrides table
+  const budgetOverridesExists = await db.get(
+    "SELECT name FROM sqlite_master WHERE type='table' AND name='budget_overrides'"
+  );
+
+  if (!budgetOverridesExists) {
+    await db.run(`
+      CREATE TABLE budget_overrides (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        budget_id INTEGER NOT NULL,
+        additional_amount REAL NOT NULL,
+        reason TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        expires_at DATETIME,
+        FOREIGN KEY (budget_id) REFERENCES budgets(id)
+      )
+    `);
+    console.log('[Migration] Created budget_overrides table');
+  }
+
+  // Migrate triggers table
+  const triggersColumns = await db.all("PRAGMA table_info(triggers)");
+  const hasThresholdText = triggersColumns.find(c => c.name === 'threshold' && c.type === 'TEXT');
+  const hasNameColumn = triggersColumns.find(c => c.name === 'name');
+
+  if (!hasThresholdText || !hasNameColumn) {
+    await db.run(`
+      CREATE TABLE triggers_new (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL DEFAULT 'unnamed',
+        trigger_type TEXT NOT NULL,
+        scope TEXT NOT NULL,
+        scope_id TEXT,
+        threshold TEXT NOT NULL,
+        action TEXT NOT NULL,
+        webhook_url TEXT,
+        enabled INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    await db.run(`
+      INSERT INTO triggers_new (id, name, trigger_type, scope, scope_id, threshold, action, webhook_url, enabled, created_at)
+      SELECT id, 'migrated-' || id, trigger_type, scope, scope_id, CAST(threshold AS TEXT), action, NULL, enabled, created_at
+      FROM triggers
+    `);
+    await db.run(`DROP TABLE triggers`);
+    await db.run(`ALTER TABLE triggers_new RENAME TO triggers`);
+    console.log('[Migration] Migrated triggers table - threshold now TEXT, added name and webhook_url');
+  }
+
+  // Add columns to trigger_events
+  const triggerEventsColumns = await db.all("PRAGMA table_info(trigger_events)");
+  const hasEntityType = triggerEventsColumns.find(c => c.name === 'entity_type');
+
+  if (!hasEntityType) {
+    await db.run(`ALTER TABLE trigger_events ADD COLUMN entity_type TEXT`);
+    await db.run(`ALTER TABLE trigger_events ADD COLUMN entity_id TEXT`);
+    await db.run(`ALTER TABLE trigger_events ADD COLUMN metric_value REAL`);
+    await db.run(`ALTER TABLE trigger_events ADD COLUMN baseline_value REAL`);
+    console.log('[Migration] Added columns to trigger_events table');
+  }
+
+  // Add columns to budgets
+  const budgetsColumns = await db.all("PRAGMA table_info(budgets)");
+  const hasNotifyAt = budgetsColumns.find(c => c.name === 'notify_at_percent');
+
+  if (!hasNotifyAt) {
+    await db.run(`ALTER TABLE budgets ADD COLUMN notify_at_percent INTEGER DEFAULT 80`);
+    await db.run(`ALTER TABLE budgets ADD COLUMN enforce INTEGER DEFAULT 0`);
+    console.log('[Migration] Added columns to budgets table');
+  }
+}
+
+module.exports.createTables = createTables;
+module.exports.runMigrations = runMigrations;

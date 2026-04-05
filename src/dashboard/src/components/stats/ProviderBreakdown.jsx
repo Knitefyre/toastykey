@@ -4,12 +4,7 @@ import Card from '../common/Card';
 import Skeleton from '../common/Skeleton';
 import { formatINR, formatUSD, formatPercent } from '../../services/formatters';
 import { useApp } from '../../contexts/AppContext';
-
-const COLORS = {
-  openai: '#22C55E',
-  anthropic: '#F59E0B',
-  default: '#64748B'
-};
+import { getColor } from '../../utils/providerColors';
 
 function ProviderBreakdown({ data, loading }) {
   const { state } = useApp();
@@ -61,7 +56,7 @@ function ProviderBreakdown({ data, loading }) {
             />
             <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
               {sortedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[entry.provider.toLowerCase()] || COLORS.default} />
+                <Cell key={`cell-${index}`} fill={getColor(entry.provider)} />
               ))}
             </Bar>
           </BarChart>
@@ -72,7 +67,7 @@ function ProviderBreakdown({ data, loading }) {
               <div className="flex items-center gap-2">
                 <div
                   className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: COLORS[item.provider.toLowerCase()] || COLORS.default }}
+                  style={{ backgroundColor: getColor(item.provider) }}
                 />
                 <span className="text-text-primary font-medium">{item.provider}</span>
               </div>

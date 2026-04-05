@@ -31,7 +31,14 @@
       "Bash(npm start:*)",
       "Read(//tmp/**)",
       "Bash(curl -s http://localhost:4000/api/health)",
-      "Bash(curl -s http://localhost:4000/api/setup/status)"
+      "Bash(curl -s http://localhost:4000/api/setup/status)",
+      "Bash(sqlite3 toastykey.db \".tables\")",
+      "Bash(sqlite3 toastykey.db \"PRAGMA table_info\\(baselines\\);\")",
+      "Bash(sqlite3 toastykey.db \"PRAGMA table_info\\(pause_states\\);\")",
+      "Bash(sqlite3 toastykey.db \"PRAGMA table_info\\(custom_providers\\);\")",
+      "Bash(sqlite3 toastykey.db \"PRAGMA table_info\\(budget_overrides\\);\")",
+      "Bash(find '/Users/bakatoast/Toasty OS/toastykey/tests' -type f -name *.js)",
+      "Bash(find '/Users/bakatoast/Toasty OS/toastykey' -path *docs* -name *3A* -o -path *docs* -name *SESSION*)"
     ]
   }
 }

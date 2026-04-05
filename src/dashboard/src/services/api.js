@@ -84,10 +84,16 @@ export const vaultAPI = {
 export const budgetsAPI = {
   getAll: () => apiFetch('/api/budgets'),
 
-  createOrUpdate: (scope, period, limit_amount, entity_id = null) =>
+  createOrUpdate: (scope, period, limit_amount, scope_id = null) =>
     apiFetch('/api/budgets', {
       method: 'POST',
-      body: JSON.stringify({ scope, period, limit_amount, entity_id }),
+      body: JSON.stringify({ scope, period, limit_amount, scope_id }),
+    }),
+
+  override: (id, new_limit_usd, expires_in_hours = 24) =>
+    apiFetch(`/api/budgets/override/${id}`, {
+      method: 'POST',
+      body: JSON.stringify({ new_limit_usd, expires_in_hours }),
     }),
 };
 
@@ -109,6 +115,40 @@ export const setupAPI = {
  */
 export const healthAPI = {
   check: () => apiFetch('/api/health'),
+};
+
+export const triggersAPI = {
+  getAll: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/triggers${qs ? `?${qs}` : ''}`);
+  },
+  create: (data) =>
+    apiFetch('/api/triggers', { method: 'POST', body: JSON.stringify(data) }),
+  update: (id, data) =>
+    apiFetch(`/api/triggers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  delete: (id) =>
+    apiFetch(`/api/triggers/${id}`, { method: 'DELETE' }),
+  getEvents: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/triggers/events${qs ? `?${qs}` : ''}`);
+  },
+  getStatus: () => apiFetch('/api/triggers/status'),
+  resume: (entityType, entityId) =>
+    apiFetch(`/api/triggers/resume/${entityType}/${entityId}`, { method: 'POST' }),
+};
+
+export const reportsAPI = {
+  getAll: (params = {}) => {
+    const qs = new URLSearchParams(params).toString();
+    return apiFetch(`/api/reports${qs ? `?${qs}` : ''}`);
+  },
+  generate: (type, start_date, end_date) =>
+    apiFetch('/api/reports/generate', {
+      method: 'POST',
+      body: JSON.stringify({ type, start_date, end_date }),
+    }),
+  getById: (id) => apiFetch(`/api/reports/${id}`),
+  delete: (id) => apiFetch(`/api/reports/${id}`, { method: 'DELETE' }),
 };
 
 // Convenience exports for direct function imports
@@ -133,6 +173,21 @@ export const setBudget = (data) => budgetsAPI.createOrUpdate(data.scope, data.pe
 export const getSetupStatus = () => setupAPI.getStatus();
 export const scanForEnv = (directories) => setupAPI.scanDirectories(directories);
 
+export const getTriggers = (params) => triggersAPI.getAll(params);
+export const createTrigger = (data) => triggersAPI.create(data);
+export const updateTrigger = (id, data) => triggersAPI.update(id, data);
+export const deleteTrigger = (id) => triggersAPI.delete(id);
+export const getTriggerEvents = (params) => triggersAPI.getEvents(params);
+export const getTriggersStatus = () => triggersAPI.getStatus();
+export const resumeEntity = (type, id) => triggersAPI.resume(type, id);
+
+export const getReports = (params) => reportsAPI.getAll(params);
+export const generateReport = (type, start, end) => reportsAPI.generate(type, start, end);
+export const getReport = (id) => reportsAPI.getById(id);
+export const deleteReport = (id) => reportsAPI.delete(id);
+
+export const overrideBudget = (id, newLimit, hours) => budgetsAPI.override(id, newLimit, hours);
+
 // Export all APIs as default
 export default {
   stats: statsAPI,
@@ -141,4 +196,6 @@ export default {
   budgets: budgetsAPI,
   setup: setupAPI,
   health: healthAPI,
+  triggers: triggersAPI,
+  reports: reportsAPI,
 };

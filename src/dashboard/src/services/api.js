@@ -117,6 +117,9 @@ export const healthAPI = {
   check: () => apiFetch('/api/health'),
 };
 
+/**
+ * Triggers API
+ */
 export const triggersAPI = {
   getAll: (params = {}) => {
     const qs = new URLSearchParams(params).toString();
@@ -137,6 +140,9 @@ export const triggersAPI = {
     apiFetch(`/api/triggers/resume/${entityType}/${entityId}`, { method: 'POST' }),
 };
 
+/**
+ * Reports API
+ */
 export const reportsAPI = {
   getAll: (params = {}) => {
     const qs = new URLSearchParams(params).toString();

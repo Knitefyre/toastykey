@@ -43,15 +43,25 @@ function AddTriggerModal({ isOpen, onClose, onSave, editTrigger }) {
   const [action, setAction] = useState('dashboard_notify');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
 
   useEffect(() => {
+    setSaveError(null);
     if (editTrigger) {
       setScope(editTrigger.scope || 'global');
       setScopeId(editTrigger.scope_id || '');
       setTriggerType(editTrigger.trigger_type || 'rate_spike');
-      const t = typeof editTrigger.threshold === 'string'
-        ? JSON.parse(editTrigger.threshold)
-        : (editTrigger.threshold || defaultThreshold(editTrigger.trigger_type));
+      let t;
+      if (typeof editTrigger.threshold === 'string') {
+        try {
+          t = JSON.parse(editTrigger.threshold);
+        } catch {
+          console.warn('AddTriggerModal: failed to parse threshold JSON', editTrigger.threshold);
+          t = defaultThreshold(editTrigger.trigger_type || 'rate_spike');
+        }
+      } else {
+        t = editTrigger.threshold || defaultThreshold(editTrigger.trigger_type || 'rate_spike');
+      }
       setThreshold(t);
       setAction(editTrigger.action || 'dashboard_notify');
       setWebhookUrl(editTrigger.webhook_url || '');
@@ -75,18 +85,30 @@ function AddTriggerModal({ isOpen, onClose, onSave, editTrigger }) {
   };
 
   const handleSave = async () => {
+    // Validation
+    if (scope !== 'global' && !scopeId.trim()) {
+      setSaveError(`${scope === 'provider' ? 'Provider name' : 'Project path'} is required when scope is not global.`);
+      return;
+    }
+    if (action === 'webhook' && !webhookUrl.trim()) {
+      setSaveError('Webhook URL is required when action is Webhook.');
+      return;
+    }
+    setSaveError(null);
     setSaving(true);
     try {
       await onSave({
         scope,
-        scope_id: scope === 'global' ? null : (scopeId || null),
+        scope_id: scope === 'global' ? null : (scopeId.trim() || null),
         trigger_type: triggerType,
         threshold,
         action,
-        webhook_url: action === 'webhook' ? webhookUrl : null,
+        webhook_url: action === 'webhook' ? webhookUrl.trim() : null,
         enabled: true,
       }, editTrigger?.id);
       onClose();
+    } catch (err) {
+      setSaveError(err?.message || 'Failed to save trigger. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -189,6 +211,10 @@ function AddTriggerModal({ isOpen, onClose, onSave, editTrigger }) {
             <input className={inputCls} value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)}
               placeholder="https://hooks.slack.com/..." />
           </div>
+        )}
+
+        {saveError && (
+          <p className="text-error text-sm">{saveError}</p>
         )}
 
         <div className="flex justify-end gap-3 pt-2">

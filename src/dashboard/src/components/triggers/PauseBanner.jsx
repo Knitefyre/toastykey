@@ -28,6 +28,7 @@ function PauseBanner({ paused, onResume }) {
                   variant="secondary"
                   onClick={() => onResume(p.entity_type, p.entity_id)}
                   className="text-xs py-1 px-3"
+                  aria-label={`Resume ${p.entity_id}`}
                 >
                   Resume
                 </Button>

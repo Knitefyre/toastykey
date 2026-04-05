@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { AlertTriangle, ChevronDown } from 'lucide-react';
 import Badge from '../common/Badge';
 import Skeleton from '../common/Skeleton';
@@ -10,18 +10,17 @@ const TYPE_COLOR = {
   token_explosion: 'warning', silent_drain: 'info', new_provider: 'info',
 };
 
+const LIMIT = 10;
+
 function EventLog() {
   const [events, setEvents] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [offset, setOffset] = useState(0);
-  const LIMIT = 10;
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    loadEvents(0);
-  }, []);
-
-  async function loadEvents(newOffset) {
+  const loadEvents = useCallback(async (newOffset) => {
+    setError(null);
     setLoading(true);
     try {
       const res = await getTriggerEvents({ limit: LIMIT, offset: newOffset });
@@ -34,13 +33,27 @@ function EventLog() {
       setOffset(newOffset);
     } catch (err) {
       console.error('Failed to load trigger events:', err);
+      if (newOffset === 0) setError('Failed to load events. Please try again.');
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadEvents(0);
+  }, [loadEvents]);
 
   if (loading && events.length === 0) {
     return <div className="space-y-2">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-14" />)}</div>;
+  }
+
+  if (error && events.length === 0) {
+    return (
+      <div className="flex flex-col items-center py-8 text-error">
+        <AlertTriangle className="w-8 h-8 mb-2" />
+        <p className="text-sm">{error}</p>
+      </div>
+    );
   }
 
   if (events.length === 0) {

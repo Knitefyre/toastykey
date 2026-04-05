@@ -42,9 +42,15 @@ function thresholdSummary(type, threshold) {
 function TriggerCard({ trigger, onEdit, onDelete, onToggle }) {
   const typeInfo = TRIGGER_TYPE_LABELS[trigger.trigger_type] || { label: trigger.trigger_type, color: 'default' };
   const actionInfo = ACTION_LABELS[trigger.action] || { label: trigger.action, color: 'default' };
-  const threshold = typeof trigger.threshold === 'string'
-    ? JSON.parse(trigger.threshold)
-    : trigger.threshold;
+  let threshold = trigger.threshold;
+  if (typeof trigger.threshold === 'string') {
+    try {
+      threshold = JSON.parse(trigger.threshold);
+    } catch {
+      console.warn('TriggerCard: failed to parse threshold JSON', trigger.threshold);
+      threshold = null;
+    }
+  }
 
   return (
     <div className={`bg-bg-surface border rounded-lg p-4 transition-opacity ${trigger.enabled ? 'border-border' : 'border-border opacity-60'}`}>

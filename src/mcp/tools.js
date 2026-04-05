@@ -135,6 +135,123 @@ const TOOLS = [
       },
       required: ['provider', 'label', 'api_key']
     }
+  },
+
+  {
+    name: 'get_anomaly_log',
+    description: 'Get recent anomaly detection events from triggers (rate spikes, cost spikes, error storms, etc.). Returns event history with details.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: {
+          type: 'number',
+          description: 'Maximum number of events to return (default: 10)',
+          default: 10
+        },
+        trigger_type: {
+          type: 'string',
+          enum: ['rate_spike', 'cost_spike', 'error_storm', 'token_explosion', 'silent_drain', 'new_provider'],
+          description: 'Filter by specific trigger type (optional)'
+        }
+      },
+      required: []
+    }
+  },
+
+  {
+    name: 'get_provider_stats',
+    description: 'Get detailed statistics for a specific API provider including total spend, call count, error rate, and average latency.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        provider: {
+          type: 'string',
+          description: 'Provider name (e.g., "openai", "anthropic", "elevenlabs")'
+        },
+        period: {
+          type: 'string',
+          enum: ['today', 'week', 'month', 'all'],
+          description: 'Time period for statistics',
+          default: 'week'
+        }
+      },
+      required: ['provider']
+    }
+  },
+
+  {
+    name: 'get_cost_breakdown',
+    description: 'Get detailed cost breakdown by provider, model, and project. Returns top expensive calls and usage patterns.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        period: {
+          type: 'string',
+          enum: ['today', 'week', 'month'],
+          description: 'Time period to analyze',
+          default: 'week'
+        },
+        group_by: {
+          type: 'string',
+          enum: ['provider', 'model', 'project'],
+          description: 'How to group the breakdown',
+          default: 'provider'
+        }
+      },
+      required: []
+    }
+  },
+
+  {
+    name: 'pause_provider',
+    description: 'Pause API calls to a specific provider. Useful when detecting anomalies or needing to temporarily stop usage.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        provider: {
+          type: 'string',
+          description: 'Provider name to pause (e.g., "openai", "anthropic")'
+        },
+        reason: {
+          type: 'string',
+          description: 'Reason for pausing (optional)',
+          default: 'manual_pause'
+        }
+      },
+      required: ['provider']
+    }
+  },
+
+  {
+    name: 'resume_provider',
+    description: 'Resume API calls to a previously paused provider.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        provider: {
+          type: 'string',
+          description: 'Provider name to resume (e.g., "openai", "anthropic")'
+        }
+      },
+      required: ['provider']
+    }
+  },
+
+  {
+    name: 'get_recommendations',
+    description: 'Get AI-powered cost optimization recommendations based on usage patterns (unused keys, expensive models, high error rates).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        category: {
+          type: 'string',
+          enum: ['all', 'unused_key', 'high_error_rate', 'cheaper_model'],
+          description: 'Filter recommendations by category',
+          default: 'all'
+        }
+      },
+      required: []
+    }
   }
 ];
 

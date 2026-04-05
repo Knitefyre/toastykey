@@ -20,7 +20,7 @@ class ToastyKeyMCP {
     this.server = new Server(
       {
         name: 'toastykey',
-        version: '0.1.0',
+        version: '0.3.0',
       },
       {
         capabilities: {
@@ -72,6 +72,30 @@ class ToastyKeyMCP {
 
           case 'add_key':
             result = await this.addKey(args);
+            break;
+
+          case 'get_anomaly_log':
+            result = await this.getAnomalyLog(args);
+            break;
+
+          case 'get_provider_stats':
+            result = await this.getProviderStats(args);
+            break;
+
+          case 'get_cost_breakdown':
+            result = await this.getCostBreakdown(args);
+            break;
+
+          case 'pause_provider':
+            result = await this.pauseProvider(args);
+            break;
+
+          case 'resume_provider':
+            result = await this.resumeProvider(args);
+            break;
+
+          case 'get_recommendations':
+            result = await this.getRecommendations(args);
             break;
 
           default:
@@ -433,6 +457,272 @@ class ToastyKeyMCP {
   /**
    * Convert period to a timestamp string for SQL queries
    */
+  async getAnomalyLog(args) {
+    const { limit = 10, trigger_type } = args;
+
+    let query = `
+      SELECT
+        te.*,
+        t.trigger_type,
+        t.name as trigger_name,
+        t.scope
+      FROM trigger_events te
+      JOIN triggers t ON te.trigger_id = t.id
+      WHERE 1=1
+    `;
+    const params = [];
+
+    if (trigger_type) {
+      query += ' AND t.trigger_type = ?';
+      params.push(trigger_type);
+    }
+
+    query += ' ORDER BY te.timestamp DESC LIMIT ?';
+    params.push(limit);
+
+    const events = await this.db.all(query, params);
+
+    events.forEach(e => {
+      e.details = JSON.parse(e.details);
+    });
+
+    return {
+      events,
+      total: events.length
+    };
+  }
+
+  async getProviderStats(args) {
+    const { provider, period = 'week' } = args;
+
+    const since = this._getPeriodSince(period);
+    if (!since) {
+      throw new Error(`Invalid period: ${period}`);
+    }
+
+    const stats = await this.db.get(`
+      SELECT
+        COUNT(*) as total_calls,
+        SUM(cost_usd) as total_cost_usd,
+        SUM(cost_inr) as total_cost_inr,
+        AVG(latency_ms) as avg_latency,
+        SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) as error_count,
+        ROUND(SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as error_rate
+      FROM api_calls
+      WHERE provider = ? AND timestamp >= ?
+    `, [provider, since]);
+
+    const models = await this.db.all(`
+      SELECT
+        model,
+        COUNT(*) as calls,
+        SUM(cost_usd) as cost
+      FROM api_calls
+      WHERE provider = ? AND timestamp >= ?
+      GROUP BY model
+      ORDER BY cost DESC
+    `, [provider, since]);
+
+    return {
+      provider,
+      period,
+      stats: {
+        total_calls: stats.total_calls || 0,
+        total_cost_usd: stats.total_cost_usd || 0,
+        total_cost_inr: stats.total_cost_inr || 0,
+        avg_latency_ms: stats.avg_latency || 0,
+        error_count: stats.error_count || 0,
+        error_rate: stats.error_rate || 0
+      },
+      models
+    };
+  }
+
+  async getCostBreakdown(args) {
+    const { period = 'week', group_by = 'provider' } = args;
+
+    const since = this._getPeriodSince(period);
+    if (!since) {
+      throw new Error(`Invalid period: ${period}`);
+    }
+
+    let query;
+    if (group_by === 'provider') {
+      query = `
+        SELECT
+          provider as group_name,
+          COUNT(*) as calls,
+          SUM(cost_usd) as cost
+        FROM api_calls
+        WHERE timestamp >= ?
+        GROUP BY provider
+        ORDER BY cost DESC
+      `;
+    } else if (group_by === 'model') {
+      query = `
+        SELECT
+          model as group_name,
+          COUNT(*) as calls,
+          SUM(cost_usd) as cost
+        FROM api_calls
+        WHERE timestamp >= ?
+        GROUP BY model
+        ORDER BY cost DESC
+      `;
+    } else if (group_by === 'project') {
+      query = `
+        SELECT
+          project as group_name,
+          COUNT(*) as calls,
+          SUM(cost_usd) as cost
+        FROM api_calls
+        WHERE timestamp >= ? AND project IS NOT NULL
+        GROUP BY project
+        ORDER BY cost DESC
+      `;
+    }
+
+    const breakdown = await this.db.all(query, [since]);
+
+    const topCalls = await this.db.all(`
+      SELECT
+        provider,
+        model,
+        cost_usd,
+        timestamp
+      FROM api_calls
+      WHERE timestamp >= ?
+      ORDER BY cost_usd DESC
+      LIMIT 5
+    `, [since]);
+
+    return {
+      period,
+      group_by,
+      breakdown,
+      top_expensive_calls: topCalls
+    };
+  }
+
+  async pauseProvider(args) {
+    const { provider, reason = 'manual_pause' } = args;
+
+    // Insert pause state
+    await this.db.run(`
+      INSERT OR REPLACE INTO pause_states (entity_type, entity_id, reason)
+      VALUES (?, ?, ?)
+    `, ['provider', provider, reason]);
+
+    return {
+      success: true,
+      provider,
+      reason,
+      message: `Provider '${provider}' has been paused`,
+      resume_endpoint: `/api/triggers/resume/provider/${provider}`
+    };
+  }
+
+  async resumeProvider(args) {
+    const { provider } = args;
+
+    // Delete pause state
+    await this.db.run(`
+      DELETE FROM pause_states
+      WHERE entity_type = 'provider' AND entity_id = ?
+    `, [provider]);
+
+    return {
+      success: true,
+      provider,
+      message: `Provider '${provider}' has been resumed`
+    };
+  }
+
+  async getRecommendations(args) {
+    const { category = 'all' } = args;
+
+    const recommendations = [];
+
+    // 1. Unused keys
+    if (category === 'all' || category === 'unused_key') {
+      const unusedKeys = await this.db.all(`
+        SELECT provider, label, last_used
+        FROM api_keys
+        WHERE last_used IS NULL OR last_used < datetime('now', '-30 days')
+      `);
+
+      unusedKeys.forEach(key => {
+        recommendations.push({
+          type: 'warning',
+          category: 'unused_key',
+          message: `API key "${key.label}" (${key.provider}) has not been used in 30+ days. Consider removing it.`
+        });
+      });
+    }
+
+    // 2. High error rate providers
+    if (category === 'all' || category === 'high_error_rate') {
+      const errorRates = await this.db.all(`
+        SELECT
+          provider,
+          COUNT(*) as total,
+          SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) as errors,
+          ROUND(SUM(CASE WHEN status >= 400 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 2) as error_rate
+        FROM api_calls
+        WHERE timestamp >= datetime('now', '-7 days')
+        GROUP BY provider
+        HAVING error_rate > 10
+      `);
+
+      errorRates.forEach(p => {
+        recommendations.push({
+          type: 'warning',
+          category: 'high_error_rate',
+          message: `${p.provider} has ${p.error_rate}% error rate (${p.errors}/${p.total} calls). Check API key validity and request format.`
+        });
+      });
+    }
+
+    // 3. Cheaper model suggestions
+    if (category === 'all' || category === 'cheaper_model') {
+      const expensiveModels = await this.db.all(`
+        SELECT
+          provider,
+          model,
+          COUNT(*) as calls,
+          SUM(cost_usd) as cost
+        FROM api_calls
+        WHERE timestamp >= datetime('now', '-7 days')
+        AND provider IN ('openai', 'anthropic')
+        GROUP BY provider, model
+        HAVING calls > 10
+      `);
+
+      expensiveModels.forEach(m => {
+        if (m.provider === 'openai' && m.model.includes('gpt-4') && !m.model.includes('mini')) {
+          recommendations.push({
+            type: 'suggestion',
+            category: 'cheaper_model',
+            message: `You're using ${m.model} (${m.calls} calls, $${m.cost.toFixed(2)}). Consider gpt-4o-mini for simpler tasks - 70% cheaper with similar quality.`
+          });
+        }
+        if (m.provider === 'anthropic' && m.model.includes('opus')) {
+          recommendations.push({
+            type: 'suggestion',
+            category: 'cheaper_model',
+            message: `You're using ${m.model} (${m.calls} calls, $${m.cost.toFixed(2)}). Consider claude-sonnet for most tasks - significantly cheaper.`
+          });
+        }
+      });
+    }
+
+    return {
+      category,
+      recommendations,
+      total: recommendations.length
+    };
+  }
+
   _getPeriodSince(period) {
     const now = new Date();
     let since;

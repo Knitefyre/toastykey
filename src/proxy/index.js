@@ -3,7 +3,7 @@ const cors = require('cors');
 const http = require('http');
 const path = require('path');
 const WebSocketServer = require('./websocket');
-const { detectProject, checkBudgets } = require('./middleware');
+const { detectProject, checkBudgets, checkPauseState } = require('./middleware');
 
 class ProxyServer {
   constructor(database, vault, pricing, port = 4000) {
@@ -29,6 +29,9 @@ class ProxyServer {
 
     // Project detection
     this.app.use(detectProject(this.db));
+
+    // Pause state checking
+    this.app.use(checkPauseState(this.db));
 
     // Budget checking
     this.app.use(checkBudgets(this.db));
@@ -60,6 +63,9 @@ class ProxyServer {
 
     const createSetupRouter = require('./api/setup');
     this.app.use('/api/setup', createSetupRouter(this.db));
+
+    const createTriggersRouter = require('./api/triggers');
+    this.app.use('/api/triggers', createTriggersRouter(this.db, this.wsServer));
 
     // Stats endpoint
     this.app.get('/stats', async (req, res) => {

@@ -28,7 +28,54 @@ function checkBudgets(db) {
   };
 }
 
+function checkPauseState(db) {
+  return async (req, res, next) => {
+    // Extract provider from URL path
+    const provider = req.path.split('/')[1]; // /openai/* -> 'openai'
+    req.toastykey = req.toastykey || {};
+    req.toastykey.provider = provider;
+
+    // Check if provider is paused
+    const providerPause = await db.get(`
+      SELECT * FROM pause_states
+      WHERE entity_type = 'provider' AND entity_id = ?
+    `, [provider]);
+
+    if (providerPause) {
+      return res.status(429).json({
+        error: 'ToastyKey: API calls paused',
+        reason: 'anomaly_detected',
+        trigger: providerPause.reason,
+        paused_at: providerPause.paused_at,
+        resume_endpoint: `POST /api/triggers/resume/provider/${provider}`
+      });
+    }
+
+    // Check if project is paused (if project detected)
+    if (req.toastykey.project) {
+      const projectPause = await db.get(`
+        SELECT * FROM pause_states
+        WHERE entity_type = 'project' AND entity_id = ?
+      `, [req.toastykey.project]);
+
+      if (projectPause) {
+        return res.status(429).json({
+          error: 'ToastyKey: API calls paused',
+          reason: 'anomaly_detected',
+          trigger: projectPause.reason,
+          paused_at: projectPause.paused_at,
+          project: req.toastykey.project,
+          resume_endpoint: `POST /api/triggers/resume/project/${encodeURIComponent(req.toastykey.project)}`
+        });
+      }
+    }
+
+    next();
+  };
+}
+
 module.exports = {
   detectProject,
-  checkBudgets
+  checkBudgets,
+  checkPauseState
 };

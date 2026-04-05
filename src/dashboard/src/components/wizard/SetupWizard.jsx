@@ -16,17 +16,14 @@ function SetupWizard({ onComplete }) {
   const totalSteps = 4;
 
   const goNext = () => {
-    console.log('[SetupWizard] goNext called, currentStep:', currentStep, 'totalSteps:', totalSteps);
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      console.log('[SetupWizard] Reached final step, calling onComplete');
       onComplete();
     }
   };
 
   const handleComplete = () => {
-    console.log('[SetupWizard] handleComplete called, calling onComplete');
     onComplete();
   };
 

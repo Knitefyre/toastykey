@@ -5,11 +5,13 @@ import Card from '../components/common/Card';
 import KeyTable from '../components/vault/KeyTable';
 import AddKeyModal from '../components/vault/AddKeyModal';
 import { getKeys, addKey, deleteKey, revealKey } from '../services/api';
+import { useToast } from '../contexts/ToastContext';
 
 function KeyVault() {
   const [keys, setKeys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     loadKeys();
@@ -20,21 +22,34 @@ function KeyVault() {
     try {
       const result = await getKeys();
       setKeys(result.keys || []);
-    } catch (error) {
-      console.error('Failed to load keys:', error);
+    } catch (err) {
+      console.error('Failed to load keys:', err);
+      showToast('Failed to load keys', 'error');
     } finally {
       setLoading(false);
     }
   };
 
   const handleAddKey = async (keyData) => {
-    await addKey(keyData);
-    await loadKeys();
+    try {
+      await addKey(keyData);
+      await loadKeys();
+      showToast('Key added successfully', 'success');
+    } catch (err) {
+      console.error('Failed to add key:', err);
+      showToast('Failed to add key', 'error');
+    }
   };
 
   const handleDeleteKey = async (keyId) => {
-    await deleteKey(keyId);
-    await loadKeys();
+    try {
+      await deleteKey(keyId);
+      await loadKeys();
+      showToast('Key deleted', 'success');
+    } catch (err) {
+      console.error('Failed to delete key:', err);
+      showToast('Failed to delete key', 'error');
+    }
   };
 
   const handleRevealKey = async (keyId) => {

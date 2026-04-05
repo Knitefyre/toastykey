@@ -17,6 +17,7 @@ function Overview() {
   const [outputs, setOutputs] = useState(null);
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -24,6 +25,7 @@ function Overview() {
 
   const loadData = async () => {
     setLoading(true);
+    setError(null);
     try {
       const [statsRes, dailyRes, providersRes, outputsRes, budgetsRes] = await Promise.all([
         getStats(),
@@ -38,14 +40,26 @@ function Overview() {
       setProviders(providersRes.providers || []);
       setOutputs(outputsRes);
       setBudgets(budgetsRes.budgets || []);
-    } catch (error) {
-      console.error('Failed to load overview data:', error);
+    } catch (err) {
+      console.error('Failed to load overview data:', err);
+      setError('Failed to load dashboard data. Is the ToastyKey server running?');
     } finally {
       setLoading(false);
     }
   };
 
   const globalBudget = budgets.find(b => b.scope === 'global');
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary mb-2">Overview</h1>
+        </div>
+        <div className="p-4 bg-bg-surface border border-error rounded-md text-error">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -60,20 +74,20 @@ function Overview() {
       {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          value={stats?.total_spend_today || 0}
+          value={stats?.today?.total_inr || 0}
           label="Today's Spend"
-          delta={stats?.delta_vs_yesterday}
+          delta={stats?.today?.delta_vs_yesterday}
           loading={loading}
           type="currency"
         />
         <StatCard
-          value={stats?.total_spend_month || 0}
+          value={stats?.month?.total_inr || 0}
           label="This Month"
           loading={loading}
           type="currency"
         />
         <StatCard
-          value={stats?.total_calls || 0}
+          value={stats?.today?.call_count || 0}
           label="API Calls"
           loading={loading}
           type="number"

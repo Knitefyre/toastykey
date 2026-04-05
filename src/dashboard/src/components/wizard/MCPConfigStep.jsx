@@ -13,7 +13,7 @@ function MCPConfigStep({ onComplete }) {
     "toastykey": {
       "command": "node",
       "args": [
-        "${process.cwd()}/src/index.js",
+        "/path/to/toastykey/src/index.js",
         "mcp"
       ]
     }
@@ -28,7 +28,6 @@ function MCPConfigStep({ onComplete }) {
   };
 
   const handleFinish = () => {
-    console.log('[MCPConfigStep] Finish button clicked, calling onComplete');
     onComplete();
   };
 
@@ -84,7 +83,7 @@ function MCPConfigStep({ onComplete }) {
         <div className="flex items-start gap-2 text-sm">
           <Code className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
           <div className="text-text-secondary">
-            <strong className="text-text-primary">Tip:</strong> You can now ask Claude "How much have I spent today?" and it will use ToastyKey to answer!
+            <strong className="text-text-primary">Note:</strong> Replace <code className="text-info">/path/to/toastykey</code> with the actual folder where you installed ToastyKey (e.g. <code className="text-info">/Users/you/toastykey</code>). Then restart Claude Code.
           </div>
         </div>
       </div>

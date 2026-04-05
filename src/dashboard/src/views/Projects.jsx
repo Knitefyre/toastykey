@@ -10,6 +10,7 @@ import { formatINR, formatRelativeTime } from '../services/formatters';
 function Projects() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,11 +19,13 @@ function Projects() {
 
   const loadProjects = async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await getProjects();
       setProjects(result.projects || []);
-    } catch (error) {
-      console.error('Failed to load projects:', error);
+    } catch (err) {
+      console.error('Failed to load projects:', err);
+      setError('Failed to load projects. Is the ToastyKey server running?');
     } finally {
       setLoading(false);
     }
@@ -37,6 +40,15 @@ function Projects() {
             <Skeleton key={i} variant="card" className="h-40" />
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div>
+        <h1 className="text-2xl font-bold text-text-primary mb-6">Projects</h1>
+        <div className="p-4 bg-bg-surface border border-error rounded-md text-error">{error}</div>
       </div>
     );
   }

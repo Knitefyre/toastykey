@@ -12,8 +12,9 @@ import { formatINR } from '../services/formatters';
 function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [project, setProject] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadProject();
@@ -21,11 +22,13 @@ function ProjectDetail() {
 
   const loadProject = async () => {
     setLoading(true);
+    setError(null);
     try {
       const result = await getProject(id);
-      setProject(result.project);
-    } catch (error) {
-      console.error('Failed to load project:', error);
+      setData(result);
+    } catch (err) {
+      console.error('Failed to load project:', err);
+      setError('Failed to load project. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -43,7 +46,19 @@ function ProjectDetail() {
     );
   }
 
-  if (!project) {
+  if (error) {
+    return (
+      <div>
+        <Button variant="secondary" onClick={() => navigate('/projects')} className="mb-6">
+          <ChevronLeft className="w-4 h-4 mr-2" />
+          Back to Projects
+        </Button>
+        <div className="p-4 bg-bg-surface border border-error rounded-md text-error">{error}</div>
+      </div>
+    );
+  }
+
+  if (!data?.project) {
     return (
       <div>
         <Button variant="secondary" onClick={() => navigate('/projects')} className="mb-6">
@@ -54,6 +69,8 @@ function ProjectDetail() {
       </div>
     );
   }
+
+  const { project, sessions, cost_by_provider } = data;
 
   return (
     <div>
@@ -74,7 +91,7 @@ function ProjectDetail() {
         <Card>
           <div className="p-6">
             <div className="text-3xl font-code font-bold text-text-primary mb-1">
-              {formatINR(project.total_cost_inr, { compact: true })}
+              {formatINR(project.total_cost, { compact: true })}
             </div>
             <div className="text-text-secondary text-sm">Total Cost</div>
           </div>
@@ -82,7 +99,7 @@ function ProjectDetail() {
         <Card>
           <div className="p-6">
             <div className="text-3xl font-code font-bold text-text-primary mb-1">
-              {project.call_count}
+              {project.call_count || 0}
             </div>
             <div className="text-text-secondary text-sm">API Calls</div>
           </div>
@@ -90,7 +107,7 @@ function ProjectDetail() {
         <Card>
           <div className="p-6">
             <div className="text-3xl font-code font-bold text-text-primary mb-1">
-              {project.sessions?.length || 0}
+              {sessions?.length || 0}
             </div>
             <div className="text-text-secondary text-sm">Sessions</div>
           </div>
@@ -98,9 +115,9 @@ function ProjectDetail() {
       </div>
 
       {/* Provider Breakdown */}
-      {project.providers && project.providers.length > 0 && (
+      {cost_by_provider && cost_by_provider.length > 0 && (
         <div className="mb-6">
-          <ProviderBreakdown data={project.providers} loading={false} />
+          <ProviderBreakdown data={cost_by_provider} loading={false} />
         </div>
       )}
 

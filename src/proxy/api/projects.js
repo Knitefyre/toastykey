@@ -45,7 +45,11 @@ function createProjectsRouter(db) {
       const { id } = req.params;
 
       const project = await db.db.get(`
-        SELECT * FROM projects WHERE id = ?
+        SELECT
+          p.*,
+          (SELECT COUNT(*) FROM api_calls WHERE project = p.name) as call_count
+        FROM projects p
+        WHERE p.id = ?
       `, [id]);
 
       if (!project) {

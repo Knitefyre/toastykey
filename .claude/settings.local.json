@@ -29,7 +29,9 @@
       "Bash(npm run:*)",
       "Bash(pkill -f \"node.*toastykey\")",
       "Bash(npm start:*)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "Bash(curl -s http://localhost:4000/api/health)",
+      "Bash(curl -s http://localhost:4000/api/setup/status)"
     ]
   }
 }

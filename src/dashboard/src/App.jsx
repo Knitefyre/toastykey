@@ -4,6 +4,7 @@ import { AppProvider } from './contexts/AppContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 import Layout from './components/layout/Layout';
 import Toast from './components/common/Toast';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import SetupWizard from './components/wizard/SetupWizard';
 import Overview from './views/Overview';
 import Projects from './views/Projects';
@@ -74,12 +75,16 @@ function AppContent() {
 
   if (needsSetup) {
     console.log('[App] Showing setup wizard');
-    return <SetupWizard onComplete={handleSetupComplete} />;
+    return (
+      <div key="setup-wizard">
+        <SetupWizard onComplete={handleSetupComplete} />
+      </div>
+    );
   }
 
   console.log('[App] Showing dashboard');
   return (
-    <>
+    <div key="dashboard">
       <Routes>
         <Route path="/" element={<Layout><Overview /></Layout>} />
         <Route path="/projects" element={<Layout><Projects /></Layout>} />
@@ -90,19 +95,21 @@ function AppContent() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <ToastContainer />
-    </>
+    </div>
   );
 }
 
 function App() {
   return (
-    <BrowserRouter>
-      <ToastProvider>
-        <AppProvider>
-          <AppContent />
-        </AppProvider>
-      </ToastProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <ToastProvider>
+          <AppProvider>
+            <AppContent />
+          </AppProvider>
+        </ToastProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

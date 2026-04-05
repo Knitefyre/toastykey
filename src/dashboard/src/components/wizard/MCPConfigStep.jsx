@@ -27,6 +27,11 @@ function MCPConfigStep({ onComplete }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleFinish = () => {
+    console.log('[MCPConfigStep] Finish button clicked, calling onComplete');
+    onComplete();
+  };
+
   return (
     <div>
       <div className="text-center mb-6">
@@ -84,7 +89,7 @@ function MCPConfigStep({ onComplete }) {
         </div>
       </div>
 
-      <Button variant="primary" onClick={onComplete} className="w-full">
+      <Button variant="primary" onClick={handleFinish} className="w-full">
         Finish Setup
       </Button>
     </div>

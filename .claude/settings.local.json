@@ -37,8 +37,15 @@
       "Bash(sqlite3 toastykey.db \"PRAGMA table_info\\(pause_states\\);\")",
       "Bash(sqlite3 toastykey.db \"PRAGMA table_info\\(custom_providers\\);\")",
       "Bash(sqlite3 toastykey.db \"PRAGMA table_info\\(budget_overrides\\);\")",
-      "Bash(find '/Users/bakatoast/Toasty OS/toastykey/tests' -type f -name *.js)",
-      "Bash(find '/Users/bakatoast/Toasty OS/toastykey' -path *docs* -name *3A* -o -path *docs* -name *SESSION*)"
+      "Bash(lsof -ti:5173)",
+      "Bash(find src/triggers/types -name \"*.js\" -exec sed -i '' 's/await db\\\\.get\\(/await db.db.get\\(/g' {} \\\\;)",
+      "Bash(find src/triggers/types -name \"*.js\" -exec sed -i '' 's/await db\\\\.all\\(/await db.db.all\\(/g' {} \\\\;)",
+      "Bash(sed -i '' 's/await this\\\\.db\\\\.get\\(/await this.db.db.get\\(/g' src/reports/generator.js)",
+      "Bash(sed -i '' 's/await this\\\\.db\\\\.all\\(/await this.db.db.all\\(/g' src/reports/generator.js)",
+      "Bash(find src/triggers/actions -name \"*.js\" -exec sed -i '' 's/await db\\\\.get\\(/await db.db.get\\(/g' {} \\\\;)",
+      "Bash(find src/triggers/actions -name \"*.js\" -exec sed -i '' 's/await db\\\\.all\\(/await db.db.all\\(/g' {} \\\\;)",
+      "Bash(pkill -f \"vite.*dashboard\")",
+      "Bash(amp)"
     ]
   }
 }

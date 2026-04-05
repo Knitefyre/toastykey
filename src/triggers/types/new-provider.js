@@ -3,7 +3,7 @@ async function check(db, trigger, baselines) {
   const { window_minutes = 1 } = threshold;
 
   // Get historical providers
-  const historical = await db.all(`
+  const historical = await db.db.all(`
     SELECT DISTINCT provider FROM api_calls
     WHERE timestamp < datetime('now', '-${window_minutes} minutes')
   `);
@@ -11,7 +11,7 @@ async function check(db, trigger, baselines) {
   const historicalProviders = new Set(historical.map(r => r.provider));
 
   // Check for new provider in recent window
-  const recent = await db.all(`
+  const recent = await db.db.all(`
     SELECT DISTINCT provider FROM api_calls
     WHERE timestamp >= datetime('now', '-${window_minutes} minutes')
   `);

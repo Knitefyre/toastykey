@@ -28,7 +28,7 @@ async function check(db, trigger, baselines) {
 
   query += ` ORDER BY total_tokens DESC LIMIT 1`;
 
-  const explosiveCall = await db.get(query);
+  const explosiveCall = await db.db.get(query);
 
   if (explosiveCall) {
     return {

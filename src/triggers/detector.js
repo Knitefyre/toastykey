@@ -42,7 +42,7 @@ class AnomalyDetector {
   async check() {
     try {
       // 1. Load enabled triggers
-      const triggers = await this.db.all(
+      const triggers = await this.db.db.all(
         'SELECT * FROM triggers WHERE enabled = 1'
       );
 
@@ -74,7 +74,7 @@ class AnomalyDetector {
     const threshold = JSON.parse(trigger.threshold);
     const cooldown = threshold.cooldown_minutes || 10;
 
-    const lastEvent = await this.db.get(
+    const lastEvent = await this.db.db.get(
       `SELECT timestamp FROM trigger_events
        WHERE trigger_id = ?
        ORDER BY timestamp DESC LIMIT 1`,

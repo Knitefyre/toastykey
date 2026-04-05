@@ -21,7 +21,7 @@ function checkBudgets(db, wsServer) {
   return async (req, res, next) => {
     try {
       // Get active budgets with enforcement enabled
-      const budgets = await db.all('SELECT * FROM budgets WHERE active = 1 AND enforce = 1');
+      const budgets = await db.db.all('SELECT * FROM budgets WHERE active = 1 AND enforce = 1');
 
       if (budgets.length === 0) {
         // No enforcement, just track
@@ -107,7 +107,7 @@ function checkPauseState(db) {
     req.toastykey.provider = provider;
 
     // Check if provider is paused
-    const providerPause = await db.get(`
+    const providerPause = await db.db.get(`
       SELECT * FROM pause_states
       WHERE entity_type = 'provider' AND entity_id = ?
     `, [provider]);
@@ -124,7 +124,7 @@ function checkPauseState(db) {
 
     // Check if project is paused (if project detected)
     if (req.toastykey.project) {
-      const projectPause = await db.get(`
+      const projectPause = await db.db.get(`
         SELECT * FROM pause_states
         WHERE entity_type = 'project' AND entity_id = ?
       `, [req.toastykey.project]);

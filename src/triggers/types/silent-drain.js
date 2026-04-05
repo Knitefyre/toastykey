@@ -15,7 +15,7 @@ async function check(db, trigger, baselines) {
     query += ` AND project = '${trigger.scope_id}'`;
   }
 
-  const result = await db.get(query);
+  const result = await db.db.get(query);
 
   if (result.count > 0) {
     return {

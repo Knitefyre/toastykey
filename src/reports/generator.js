@@ -87,7 +87,7 @@ class ReportGenerator {
 
   async collectData(startDate, endDate) {
     // Summary
-    const summary = await this.db.get(`
+    const summary = await this.db.db.get(`
       SELECT
         SUM(cost_usd) as total_usd,
         SUM(cost_inr) as total_inr,
@@ -99,7 +99,7 @@ class ReportGenerator {
     `, [startDate, endDate]);
 
     // Provider breakdown
-    const providers = await this.db.all(`
+    const providers = await this.db.db.all(`
       SELECT
         provider,
         SUM(cost_usd) as cost,
@@ -112,7 +112,7 @@ class ReportGenerator {
     `, [startDate, endDate, startDate, endDate]);
 
     // Project breakdown
-    const projects = await this.db.all(`
+    const projects = await this.db.db.all(`
       SELECT
         project,
         SUM(cost_usd) as cost,
@@ -125,7 +125,7 @@ class ReportGenerator {
     `, [startDate, endDate]);
 
     // Top 5 expensive calls
-    const topCalls = await this.db.all(`
+    const topCalls = await this.db.db.all(`
       SELECT
         provider,
         model,
@@ -151,7 +151,7 @@ class ReportGenerator {
   }
 
   async getBudgetStatus() {
-    const budgets = await this.db.all('SELECT * FROM budgets WHERE active = 1');
+    const budgets = await this.db.db.all('SELECT * FROM budgets WHERE active = 1');
     const todaySpend = await this.db.getTotalSpend('today');
 
     return budgets.map(b => {
@@ -172,12 +172,12 @@ class ReportGenerator {
     const prevEndDate = new Date(new Date(startDate) - 1);
     const prevStartDate = new Date(prevEndDate - periodLength);
 
-    const current = await this.db.get(`
+    const current = await this.db.db.get(`
       SELECT SUM(cost_usd) as spend FROM api_calls
       WHERE timestamp BETWEEN ? AND ?
     `, [startDate, endDate]);
 
-    const previous = await this.db.get(`
+    const previous = await this.db.db.get(`
       SELECT SUM(cost_usd) as spend FROM api_calls
       WHERE timestamp BETWEEN ? AND ?
     `, [prevStartDate.toISOString(), prevEndDate.toISOString()]);
@@ -195,7 +195,7 @@ class ReportGenerator {
   }
 
   async getAnomalies(startDate, endDate) {
-    const events = await this.db.all(`
+    const events = await this.db.db.all(`
       SELECT
         te.*,
         t.trigger_type,
@@ -217,7 +217,7 @@ class ReportGenerator {
     const recommendations = [];
 
     // 1. Unused keys
-    const unusedKeys = await this.db.all(`
+    const unusedKeys = await this.db.db.all(`
       SELECT provider, label, last_used
       FROM api_keys
       WHERE last_used IS NULL OR last_used < datetime('now', '-30 days')
@@ -232,7 +232,7 @@ class ReportGenerator {
     });
 
     // 2. High error rate providers
-    const errorRates = await this.db.all(`
+    const errorRates = await this.db.db.all(`
       SELECT
         provider,
         COUNT(*) as total,
@@ -253,7 +253,7 @@ class ReportGenerator {
     });
 
     // 3. Cheaper model suggestions
-    const expensiveModels = await this.db.all(`
+    const expensiveModels = await this.db.db.all(`
       SELECT
         provider,
         model,

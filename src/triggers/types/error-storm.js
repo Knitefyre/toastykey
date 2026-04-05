@@ -16,7 +16,7 @@ async function check(db, trigger, baselines) {
     query += ` AND project = '${trigger.scope_id}'`;
   }
 
-  const stats = await db.get(query);
+  const stats = await db.db.get(query);
 
   if (stats.total < min_sample_size) return null;
 

@@ -14,7 +14,7 @@ async function check(db, trigger, baselines) {
     query += ` AND project = '${trigger.scope_id}'`;
   }
 
-  const currentCost = await db.get(query);
+  const currentCost = await db.db.get(query);
 
   const baseline = await baselines.getCost(
     trigger.scope,

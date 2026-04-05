@@ -168,7 +168,7 @@ export const revealKey = (id) => vaultAPI.revealKey(id);
 export const importEnv = (content) => vaultAPI.importEnv(content);
 
 export const getBudgets = () => budgetsAPI.getAll();
-export const setBudget = (data) => budgetsAPI.createOrUpdate(data.scope, data.period, data.limit, data.entity_id);
+export const setBudget = (data) => budgetsAPI.createOrUpdate(data.scope, data.period, data.limit, data.scope_id);
 
 export const getSetupStatus = () => setupAPI.getStatus();
 export const scanForEnv = (directories) => setupAPI.scanDirectories(directories);

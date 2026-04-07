@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './contexts/AppContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
+import { useWebSocket } from './hooks/useWebSocket';
 import Layout from './components/layout/Layout';
 import Toast from './components/common/Toast';
 import ErrorBoundary from './components/common/ErrorBoundary';
@@ -34,10 +35,31 @@ function ToastContainer() {
 function AppContent() {
   const [needsSetup, setNeedsSetup] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { socket } = useWebSocket();
+  const { showToast } = useToast();
 
   useEffect(() => {
     checkSetupStatus();
   }, []);
+
+  // Listen for project_detected events
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleProjectDetected = (project) => {
+      console.log('[Dashboard] New project detected:', project);
+      showToast(
+        `New project detected: ${project.name} (${project.type})`,
+        'info'
+      );
+    };
+
+    socket.on('project_detected', handleProjectDetected);
+
+    return () => {
+      socket.off('project_detected', handleProjectDetected);
+    };
+  }, [socket, showToast]);
 
   const checkSetupStatus = async () => {
     try {

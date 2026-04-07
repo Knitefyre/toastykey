@@ -2,6 +2,8 @@
 
 const path = require('path');
 const ConfigManager = require('../src/setup/ConfigManager');
+const KeyScanner = require('../src/setup/KeyScanner');
+const SetupManager = require('../src/setup/SetupManager');
 
 async function main() {
   try {
@@ -12,8 +14,11 @@ async function main() {
     const args = process.argv.slice(2);
     const command = args[0];
 
+    // Handle subcommands
     if (command === 'config') {
-      console.log('Setup wizard not yet implemented');
+      const keyScanner = new KeyScanner(configManager);
+      const setupManager = new SetupManager(configManager, keyScanner);
+      await setupManager.runWizard();
       process.exit(0);
     }
 
@@ -25,14 +30,38 @@ async function main() {
 
     // Check if first run
     if (!config.first_run_complete) {
-      console.log('First run detected - setup wizard will go here');
-      console.log('For now, starting server with defaults...');
-    }
+      const keyScanner = new KeyScanner(configManager);
+      const setupManager = new SetupManager(configManager, keyScanner);
+      const newConfig = await setupManager.runWizard();
 
-    // Start server
-    const serverMain = require('../src/index.js');
-    // Note: src/index.js needs to be modified to accept config and export main function
-    console.log('Server start integration pending - Task 1 focuses on ConfigManager');
+      // Import keys if any were found
+      if (newConfig.scan && newConfig.scan.paths.length > 0) {
+        // Keys will be imported by importKeysToVault function
+      }
+
+      // Start server with new config
+      const { main: serverMain } = require('../src/index.js');
+      await serverMain({
+        ...newConfig,
+        skipBanner: false
+      });
+
+      // Open dashboard
+      await setupManager.openDashboard(newConfig.preferences.port === 4000 ? 3000 : newConfig.preferences.port - 1000);
+
+    } else {
+      // Subsequent run - quick check
+      console.log('\n🔥 ToastyKey\n');
+
+      // TODO: Quick check for new .env files
+
+      // Start server
+      const { main: serverMain } = require('../src/index.js');
+      await serverMain({
+        ...config,
+        skipBanner: true
+      });
+    }
 
   } catch (error) {
     console.error('Error:', error.message);

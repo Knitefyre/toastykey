@@ -281,6 +281,18 @@ async function runMigrations(db) {
     `);
     console.log('[Migration] Created reports table');
   }
+
+  // Add columns to projects table for auto-discovery
+  const projectCols = await db.all("PRAGMA table_info(projects)");
+  const hasTypeCol = projectCols.some(col => col.name === 'type');
+
+  if (!hasTypeCol) {
+    await db.run(`ALTER TABLE projects ADD COLUMN type TEXT`);
+    await db.run(`ALTER TABLE projects ADD COLUMN manifest_file TEXT`);
+    await db.run(`ALTER TABLE projects ADD COLUMN auto_detected INTEGER DEFAULT 0`);
+    await db.run(`ALTER TABLE projects ADD COLUMN detected_at TEXT`);
+    console.log('[Migration] Added auto-discovery columns to projects table');
+  }
 }
 
 module.exports.createTables = createTables;

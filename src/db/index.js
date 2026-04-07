@@ -663,6 +663,45 @@ class ToastyKeyDB {
     }
   }
 
+  // ============ PROJECTS ============
+
+  async getProject(pathOrId) {
+    // Try by path first
+    let project = await this.db.get(
+      'SELECT * FROM projects WHERE directory_path = ?',
+      [pathOrId]
+    );
+
+    // If not found, try by ID
+    if (!project && typeof pathOrId === 'number') {
+      project = await this.db.get(
+        'SELECT * FROM projects WHERE id = ?',
+        [pathOrId]
+      );
+    }
+
+    return project || null;
+  }
+
+  async createProject(data) {
+    const {
+      name,
+      path: projectPath,
+      type = null,
+      manifest_file = null,
+      auto_detected = 0,
+      detected_at = null
+    } = data;
+
+    const result = await this.db.run(
+      `INSERT INTO projects (name, directory_path, type, manifest_file, auto_detected, detected_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [name, projectPath, type, manifest_file, auto_detected, detected_at]
+    );
+
+    return result.lastID;
+  }
+
   async close() {
     return new Promise((resolve, reject) => {
       this.db.close((err) => {

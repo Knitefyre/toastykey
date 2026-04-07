@@ -14,27 +14,57 @@ ToastyKey is a local MCP server + API proxy that gives you complete visibility a
 
 ## Installation
 
+### One-Command Install (Session 4A)
+
+```bash
+npx toastykey
+```
+
+On first run, ToastyKey will:
+1. Scan for API keys in your current directory
+2. Optionally scan additional locations (~/.config, environment variables)
+3. Set up a global budget (optional)
+4. Configure project auto-discovery (optional)
+5. Start the server and open the dashboard
+
+### Subsequent Runs
+
+```bash
+npx toastykey
+```
+
+ToastyKey checks for new API keys and starts immediately (2-3 seconds).
+
+### CLI Commands
+
+```bash
+npx toastykey                    # Start server (with quick check)
+npx toastykey --no-scan          # Skip scan, start immediately
+npx toastykey --port 5000        # Use custom port
+
+npx toastykey scan               # Manually scan for new keys
+npx toastykey config             # Re-run setup wizard
+npx toastykey watch list         # Show watched directories
+npx toastykey watch add ~/code   # Watch directory for new projects
+npx toastykey reset              # Reset configuration
+```
+
+### Configuration
+
+Config stored in `~/.toastykey/config.json`
+
+Override with:
+- CLI flags: `--port 5000`
+- Environment variables: `TOASTYKEY_PORT=5000`
+- Local config: `./.toastykey.json`
+
+### Manual Setup
+
 ```bash
 git clone <repository-url>
 cd toastykey
 npm install
-```
-
-## Quick Start
-
-```bash
-# 1. Start ToastyKey
 npm start
-
-# 2. Add your API keys
-node tests/manual-openai-test.js setup
-
-# 3. Point your code to the proxy
-# Change: https://api.openai.com/v1/chat/completions
-# To:     http://localhost:4000/openai/v1/chat/completions
-
-# 4. Check your spending
-curl http://localhost:4000/stats
 ```
 
 ## Features (Session 1)

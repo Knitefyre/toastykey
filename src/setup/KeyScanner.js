@@ -6,35 +6,36 @@ const ignore = require('ignore');
 class KeyScanner {
   constructor(configManager) {
     this.configManager = configManager;
+    // Order matters: more specific patterns should be checked first
     this.providers = {
-      openai: {
-        pattern: /^(sk-proj-[A-Za-z0-9]{48,}|sk-[A-Za-z0-9]{48,})$/,
-        envVars: ['OPENAI_API_KEY', 'OPENAI_KEY'],
-        configPaths: ['~/.config/openai/api_key', '~/.openai/api_key']
-      },
       anthropic: {
         pattern: /^sk-ant-api03-[A-Za-z0-9_-]{95,}$/,
         envVars: ['ANTHROPIC_API_KEY', 'CLAUDE_API_KEY'],
         configPaths: ['~/.config/anthropic/api_key', '~/.anthropic/api_key']
       },
-      elevenlabs: {
-        pattern: /^[a-f0-9]{32}$/,
-        envVars: ['ELEVENLABS_API_KEY', 'ELEVEN_API_KEY', 'XI_API_KEY'],
-        configPaths: ['~/.config/elevenlabs/api_key']
-      },
-      cartesia: {
-        pattern: /^[A-Za-z0-9_-]{32,}$/,
-        envVars: ['CARTESIA_API_KEY'],
-        configPaths: []
+      openai: {
+        pattern: /^sk-proj-[A-Za-z0-9]{48,}$/,
+        envVars: ['OPENAI_API_KEY', 'OPENAI_KEY'],
+        configPaths: ['~/.config/openai/api_key', '~/.openai/api_key']
       },
       replicate: {
         pattern: /^r8_[A-Za-z0-9]{40}$/,
         envVars: ['REPLICATE_API_TOKEN'],
         configPaths: []
       },
+      elevenlabs: {
+        pattern: /^[a-f0-9]{32}$/,
+        envVars: ['ELEVENLABS_API_KEY', 'ELEVEN_API_KEY', 'XI_API_KEY'],
+        configPaths: ['~/.config/elevenlabs/api_key']
+      },
       stability: {
         pattern: /^sk-[A-Za-z0-9]{48}$/,
         envVars: ['STABILITY_API_KEY'],
+        configPaths: []
+      },
+      cartesia: {
+        pattern: /^[A-Za-z0-9_-]{32,}$/,
+        envVars: ['CARTESIA_API_KEY'],
         configPaths: []
       }
     };

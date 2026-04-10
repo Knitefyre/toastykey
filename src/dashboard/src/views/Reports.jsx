@@ -154,7 +154,7 @@ function Reports() {
                         <h3 className="text-text-primary font-semibold">{report.period}</h3>
                       </div>
                       <p className="text-text-secondary text-sm mb-3">
-                        Generated {getRelativeTime(report.created_at)}
+                        Generated {getRelativeTime(report.generated_at)}
                       </p>
                       {summary?.summary && (
                         <div className="flex items-center gap-4 text-sm">

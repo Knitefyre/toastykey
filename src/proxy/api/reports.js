@@ -7,7 +7,7 @@ function createReportsRouter(db, generator) {
     try {
       const { type, limit = 10, offset = 0 } = req.query;
 
-      let query = 'SELECT id, period, created_at FROM reports WHERE 1=1';
+      let query = 'SELECT id, period, generated_at FROM reports WHERE 1=1';
       const params = [];
 
       if (type) {
@@ -15,7 +15,7 @@ function createReportsRouter(db, generator) {
         params.push(`%${type}%`);
       }
 
-      query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      query += ' ORDER BY generated_at DESC LIMIT ? OFFSET ?';
       params.push(parseInt(limit), parseInt(offset));
 
       const reports = await db.all(query, params);

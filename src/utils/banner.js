@@ -23,7 +23,7 @@ ${colors.reset}
 ${colors.yellow}v0.1.0${colors.reset} — The API cost layer for AI-native builders
 
 ${colors.cyan}Services:${colors.reset}
-  🔥 Proxy Server:    http://localhost:${config.proxy.port}
+  🔥 Proxy Server:    http://localhost:${(config.proxy && config.proxy.port) || 4000}
   📊 Dashboard:       http://localhost:3000 ${colors.gray}(Session 2)${colors.reset}
   🔌 MCP Server:      stdio connection
 

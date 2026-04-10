@@ -629,6 +629,21 @@ class ToastyKeyDB {
     return result.count;
   }
 
+  // ============ RAW DB PASS-THROUGHS ============
+  // These allow API routes that call db.all/run/get directly to work
+
+  async all(sql, params = []) {
+    return this.db.all(sql, params);
+  }
+
+  async get(sql, params = []) {
+    return this.db.get(sql, params);
+  }
+
+  async run(sql, params = []) {
+    return this.db.run(sql, params);
+  }
+
   // ============ UTILITY ============
 
   _buildPeriodQuery(period) {

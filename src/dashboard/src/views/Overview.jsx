@@ -196,8 +196,8 @@ function Overview() {
       {globalBudget && (
         <BudgetProgress
           current={globalBudget.current_spend || 0}
-          limit={globalBudget.limit}
-          label={`${globalBudget.period} Budget`}
+          limit={globalBudget.limit_amount || globalBudget.limit || 0}
+          label={`${globalBudget.period.charAt(0).toUpperCase() + globalBudget.period.slice(1)} Budget`}
           currency={globalBudget.currency}
           budgetId={globalBudget.id}
         />

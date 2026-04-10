@@ -5,7 +5,8 @@
       "name": "toastykey-backend",
       "runtimeExecutable": "/opt/homebrew/Cellar/node/25.8.1/bin/node",
       "runtimeArgs": ["src/index.js"],
-      "port": 4000
+      "port": 4000,
+      "autoPort": false
     },
     {
       "name": "toastykey-dashboard",

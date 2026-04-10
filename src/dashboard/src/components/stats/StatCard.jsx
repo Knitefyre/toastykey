@@ -2,10 +2,11 @@ import React from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import Card from '../common/Card';
 import Skeleton from '../common/Skeleton';
+import Tooltip from '../common/Tooltip';
 import { formatINR, formatUSD, formatNumber } from '../../services/formatters';
 import { useApp } from '../../contexts/AppContext';
 
-function StatCard({ value, label, delta, loading, type = 'number' }) {
+function StatCard({ value, label, delta, loading, type = 'number', tooltip }) {
   const { state } = useApp();
   const currency = state.currency;
 
@@ -44,8 +45,9 @@ function StatCard({ value, label, delta, loading, type = 'number' }) {
             </div>
           )}
         </div>
-        <div className="text-text-secondary text-sm">
-          {label}
+        <div className="flex items-center gap-2 text-text-secondary text-sm">
+          <span>{label}</span>
+          {tooltip && <Tooltip content={tooltip} />}
         </div>
       </div>
     </Card>

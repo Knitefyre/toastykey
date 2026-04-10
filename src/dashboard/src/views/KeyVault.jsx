@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
+import Tooltip from '../components/common/Tooltip';
 import KeyTable from '../components/vault/KeyTable';
 import AddKeyModal from '../components/vault/AddKeyModal';
 import { getKeys, addKey, deleteKey, revealKey } from '../services/api';
@@ -62,7 +63,10 @@ function KeyVault() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary mb-2">Key Vault</h1>
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-2xl font-bold text-text-primary">Key Vault</h1>
+            <Tooltip content="Your API keys are encrypted locally with AES-256-GCM and never leave your machine. ToastyKey uses these keys to proxy API calls and track costs." />
+          </div>
           <p className="text-text-secondary">
             Securely manage your API keys with AES-256-GCM encryption
           </p>

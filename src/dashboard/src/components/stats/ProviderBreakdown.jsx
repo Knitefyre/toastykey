@@ -12,7 +12,10 @@ function ProviderBreakdown({ data, loading }) {
 
   if (loading) {
     return (
-      <Card title="Provider Breakdown">
+      <Card
+        title="Provider Breakdown"
+        tooltip="Shows how much you're spending with each AI provider. Helps you understand which services cost the most."
+      >
         <div className="p-6">
           <Skeleton variant="card" className="h-64" />
         </div>
@@ -28,7 +31,10 @@ function ProviderBreakdown({ data, loading }) {
   };
 
   return (
-    <Card title="Provider Breakdown">
+    <Card
+      title="Provider Breakdown"
+      tooltip="Shows how much you're spending with each AI provider. Helps you understand which services cost the most."
+    >
       <div className="p-6">
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={sortedData} layout="horizontal">

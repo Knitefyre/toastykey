@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertTriangle, ShieldOff } from 'lucide-react';
 import Card from '../common/Card';
 import Button from '../common/Button';
+import Tooltip from '../common/Tooltip';
 import { formatINR, formatUSD, formatPercent } from '../../services/formatters';
 import { useApp } from '../../contexts/AppContext';
 import { useWebSocket } from '../../hooks/useWebSocket';
@@ -149,7 +150,10 @@ function BudgetProgress({ current, limit, label, currency, budgetId }) {
       <Card>
         <div className="p-6">
         <div className="flex items-baseline justify-between mb-4">
-          <div className="text-text-primary font-medium">{label || 'Budget'}</div>
+          <div className="flex items-center gap-2 text-text-primary font-medium">
+            <span>{label || 'Budget'}</span>
+            <Tooltip content="Shows your spending progress. At 80% you'll get a warning. At 100% all API calls are blocked until the budget period resets." />
+          </div>
           <div className={`text-sm font-code font-bold ${getTextColor()}`}>
             {formatPercent(Math.min(percentage, 100))}
           </div>

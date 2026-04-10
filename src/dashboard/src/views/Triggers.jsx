@@ -3,6 +3,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
+import Tooltip from '../components/common/Tooltip';
 import TriggerCard from '../components/triggers/TriggerCard';
 import AddTriggerModal from '../components/triggers/AddTriggerModal';
 import EventLog from '../components/triggers/EventLog';
@@ -108,7 +109,10 @@ function Triggers() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary mb-1">Anomaly Detection</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl font-bold text-text-primary">Anomaly Detection</h1>
+            <Tooltip content="Automatically detect unusual patterns in your API usage — cost spikes, error storms, rate spikes, or new providers. Set up triggers to get notified or auto-pause when something looks wrong." />
+          </div>
           <p className="text-text-secondary">Configure triggers to detect and respond to unusual API activity</p>
         </div>
         <div className="flex items-center gap-3">

@@ -11,7 +11,10 @@ function SpendChart({ data, loading }) {
 
   if (loading) {
     return (
-      <Card title="Spend Trend (30 Days)">
+      <Card
+        title="Spend Trend (30 Days)"
+        tooltip="Shows your daily API spending over the last 30 days. Helps you spot patterns and unusual spikes."
+      >
         <div className="p-6">
           <Skeleton variant="card" className="h-64" />
         </div>
@@ -24,7 +27,10 @@ function SpendChart({ data, loading }) {
   };
 
   return (
-    <Card title="Spend Trend (30 Days)">
+    <Card
+      title="Spend Trend (30 Days)"
+      tooltip="Shows your daily API spending over the last 30 days. Helps you spot patterns and unusual spikes."
+    >
       <div className="p-6">
         <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={data}>

@@ -171,24 +171,28 @@ function Overview() {
           delta={stats?.today?.delta_vs_yesterday}
           loading={loading}
           type="currency"
+          tooltip="Total cost of all API calls made today. Delta shows percentage change compared to yesterday."
         />
         <StatCard
           value={stats?.month?.total_inr || 0}
           label="This Month"
           loading={loading}
           type="currency"
+          tooltip="Total cost of all API calls made this calendar month."
         />
         <StatCard
           value={stats?.today?.call_count || 0}
           label="API Calls"
           loading={loading}
           type="number"
+          tooltip="Total number of API requests made today across all providers."
         />
         <StatCard
           value={stats?.active_projects || 0}
           label="Active Projects"
           loading={loading}
           type="number"
+          tooltip="Number of projects that have made API calls in the last 7 days."
         />
       </div>
 

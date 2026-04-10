@@ -5,6 +5,7 @@ import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import Modal from '../components/common/Modal';
 import Skeleton from '../components/common/Skeleton';
+import Tooltip from '../components/common/Tooltip';
 import { useToast } from '../contexts/ToastContext';
 import { getReports, generateReport, getReport, deleteReport } from '../services/api';
 import { formatINR, formatUSD, formatPercent } from '../services/formatters';
@@ -103,7 +104,10 @@ function Reports() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary mb-1">Usage Reports</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl font-bold text-text-primary">Usage Reports</h1>
+            <Tooltip content="Generate detailed breakdowns of your API spending — by provider, project, model, time period. Great for end-of-month reviews or tracking specific projects." />
+          </div>
           <p className="text-text-secondary">Generate comprehensive cost reports and analytics</p>
         </div>
         <div className="flex items-center gap-3">

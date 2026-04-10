@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
+import Tooltip from '../common/Tooltip';
 
 const TRIGGER_TYPES = [
-  { value: 'rate_spike',      label: 'Rate Spike',      desc: 'Call rate exceeds baseline by a multiplier' },
-  { value: 'cost_spike',      label: 'Cost Spike',      desc: 'Spending rate exceeds baseline by a multiplier' },
-  { value: 'error_storm',     label: 'Error Storm',     desc: 'Error rate exceeds a percentage threshold' },
-  { value: 'token_explosion', label: 'Token Explosion', desc: 'Single call uses abnormally high tokens' },
-  { value: 'silent_drain',    label: 'Silent Drain',    desc: 'API calls with no active session detected' },
-  { value: 'new_provider',    label: 'New Provider',    desc: 'A previously unseen provider is called' },
+  { value: 'rate_spike',      label: 'Rate Spike',      desc: 'Your agent suddenly makes way more API calls than usual — like going from 10/min to 50/min.' },
+  { value: 'cost_spike',      label: 'Cost Spike',      desc: 'Your spending spikes abnormally — like ₹20/hr jumping to ₹200/hr.' },
+  { value: 'error_storm',     label: 'Error Storm',     desc: 'Lots of API calls start failing at once — more than 50% errors means something broke.' },
+  { value: 'token_explosion', label: 'Token Explosion', desc: 'A single API call uses way more tokens than normal — like 10x your average.' },
+  { value: 'silent_drain',    label: 'Silent Drain',    desc: 'API calls happening when nothing should be running — might be a runaway agent.' },
+  { value: 'new_provider',    label: 'New Provider',    desc: 'Your code starts calling a provider you\'ve never used before.' },
 ];
 
 const ACTIONS = [
-  { value: 'log_only',          label: 'Log Only' },
-  { value: 'dashboard_notify',  label: 'Dashboard Notification' },
-  { value: 'claude_code_alert', label: 'Claude Code Alert' },
-  { value: 'auto_pause',        label: 'Auto Pause' },
-  { value: 'auto_kill',         label: 'Auto Kill' },
-  { value: 'webhook',           label: 'Webhook' },
+  { value: 'log_only',          label: 'Log Only',                 desc: 'Just record the event — no notifications or blocks.' },
+  { value: 'dashboard_notify',  label: 'Dashboard Notification',  desc: 'Show an alert in the ToastyKey dashboard.' },
+  { value: 'claude_code_alert', label: 'Claude Code Alert',       desc: 'Send a notification to Claude Code via MCP.' },
+  { value: 'auto_pause',        label: 'Auto Pause',              desc: 'Stop all API calls until you manually resume.' },
+  { value: 'auto_kill',         label: 'Auto Kill',               desc: 'Immediately terminate all API calls — use for emergencies only.' },
+  { value: 'webhook',           label: 'Webhook',                 desc: 'Send a POST request to your webhook URL (Slack, Discord, etc).' },
 ];
 
 const inputCls = 'w-full bg-bg-primary border border-border rounded-md px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-success';
@@ -153,12 +154,22 @@ function AddTriggerModal({ isOpen, onClose, onSave, editTrigger }) {
         {(triggerType === 'rate_spike' || triggerType === 'cost_spike') && (
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className={labelCls}>Multiplier</label>
+              <label className={labelCls}>
+                <span className="inline-flex items-center gap-1">
+                  Multiplier
+                  <Tooltip content="How many times higher than normal triggers an alert. 5x means if you normally spend ₹10/hr, alert at ₹50/hr." />
+                </span>
+              </label>
               <input type="number" className={inputCls} value={threshold.multiplier ?? 5}
                 onChange={e => updateThreshold('multiplier', e.target.value)} min={1} step={0.5} />
             </div>
             <div>
-              <label className={labelCls}>Window (minutes)</label>
+              <label className={labelCls}>
+                <span className="inline-flex items-center gap-1">
+                  Window (minutes)
+                  <Tooltip content="How far back to look when checking for spikes. 60 means compare the last hour to your historical average." />
+                </span>
+              </label>
               <input type="number" className={inputCls} value={threshold.window_minutes ?? 2}
                 onChange={e => updateThreshold('window_minutes', e.target.value)} min={1} />
             </div>
@@ -203,6 +214,9 @@ function AddTriggerModal({ isOpen, onClose, onSave, editTrigger }) {
               <option key={a.value} value={a.value}>{a.label}</option>
             ))}
           </select>
+          <p className="text-text-muted text-xs mt-1">
+            {ACTIONS.find(a => a.value === action)?.desc}
+          </p>
         </div>
 
         {action === 'webhook' && (

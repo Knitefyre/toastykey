@@ -151,7 +151,7 @@ class ReportGenerator {
   }
 
   async getBudgetStatus() {
-    const budgets = await this.db.db.all('SELECT * FROM budgets WHERE active = 1');
+    const budgets = await this.db.db.all('SELECT * FROM budgets');
     const todaySpend = await this.db.getTotalSpend('today');
 
     return budgets.map(b => {

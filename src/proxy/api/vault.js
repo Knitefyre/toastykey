@@ -212,6 +212,93 @@ function createVaultRouter(db, vault, wsServer) {
     }
   });
 
+  // POST /api/vault/scan-env - Scan filesystem for .env files with API keys
+  router.post('/scan-env', async (req, res) => {
+    const os = require('os');
+    const fs = require('fs').promises;
+    const pathModule = require('path');
+
+    const homeDir = os.homedir();
+    const requestedDirs = req.body.directories;
+    const searchDirs = requestedDirs && requestedDirs.length > 0
+      ? requestedDirs
+      : [
+          homeDir,
+          process.cwd(),
+          pathModule.join(homeDir, 'Desktop'),
+          pathModule.join(homeDir, 'Documents'),
+          pathModule.join(homeDir, 'Projects'),
+          pathModule.join(homeDir, 'Developer'),
+        ];
+
+    const ENV_FILENAMES = ['.env', '.env.local', '.env.development', '.env.production', '.env.test'];
+    const SKIP_DIRS = new Set(['node_modules', '.git', 'dist', 'build', '.next', '.nuxt', 'vendor', '__pycache__', '.venv', 'venv']);
+
+    function parseEnvKeys(content, filePath) {
+      const found = [];
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eq = trimmed.indexOf('=');
+        if (eq === -1) continue;
+        const envKey = trimmed.substring(0, eq).trim();
+        const value = trimmed.substring(eq + 1).trim().replace(/^["']|["']$/g, '');
+        if (!value || value.length < 8) continue;
+
+        let provider = null;
+        if ((envKey.includes('OPENAI')) && (value.startsWith('sk-') || value.startsWith('sk-proj-'))) provider = 'openai';
+        else if (envKey.includes('ANTHROPIC') && value.startsWith('sk-ant-')) provider = 'anthropic';
+        else if (envKey.includes('ELEVENLABS') || envKey.includes('ELEVEN_LABS')) provider = 'elevenlabs';
+        else if (envKey.includes('STABILITY')) provider = 'stability';
+        else if (envKey.includes('REPLICATE')) provider = 'replicate';
+        else if (envKey.includes('GROQ')) provider = 'groq';
+        else if (envKey.includes('COHERE')) provider = 'cohere';
+        else if (envKey.includes('MISTRAL')) provider = 'mistral';
+        else if (envKey.includes('PERPLEXITY')) provider = 'perplexity';
+
+        if (provider) {
+          found.push({ provider, label: 'default', key: value, env_key: envKey, file: filePath });
+        }
+      }
+      return found;
+    }
+
+    const results = [];
+    const visited = new Set();
+
+    async function scanDir(dir, depth) {
+      if (depth > 4 || visited.has(dir)) return;
+      visited.add(dir);
+      let entries;
+      try { entries = await fs.readdir(dir, { withFileTypes: true }); } catch { return; }
+
+      for (const entry of entries) {
+        const fullPath = pathModule.join(dir, entry.name);
+        if (entry.isFile() && ENV_FILENAMES.includes(entry.name)) {
+          try {
+            const content = await fs.readFile(fullPath, 'utf-8');
+            const found_keys = parseEnvKeys(content, fullPath);
+            if (found_keys.length > 0) {
+              results.push({ path: fullPath, name: entry.name, found_keys });
+            }
+          } catch { /* skip unreadable files */ }
+        } else if (entry.isDirectory() && !SKIP_DIRS.has(entry.name) && !entry.name.startsWith('.')) {
+          await scanDir(fullPath, depth + 1);
+        }
+      }
+    }
+
+    try {
+      for (const dir of searchDirs) {
+        await scanDir(dir, 0);
+      }
+      const total_keys = results.reduce((s, f) => s + f.found_keys.length, 0);
+      res.json({ files: results, total_keys, searched_dirs: searchDirs });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   return router;
 }
 

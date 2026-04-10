@@ -78,6 +78,12 @@ export const vaultAPI = {
       method: 'POST',
       body: JSON.stringify({ content }),
     }),
+
+  scanEnv: (directories) =>
+    apiFetch('/api/vault/scan-env', {
+      method: 'POST',
+      body: JSON.stringify({ directories: directories || [] }),
+    }),
 };
 
 /**
@@ -143,6 +149,25 @@ export const triggersAPI = {
 };
 
 /**
+ * Data Management API
+ */
+export const dataAPI = {
+  getStats: () => apiFetch('/api/data/stats'),
+
+  clear: (start_date, end_date) =>
+    apiFetch('/api/data/clear', {
+      method: 'POST',
+      body: JSON.stringify({ start_date, end_date }),
+    }),
+
+  addDemo: (force = false) =>
+    apiFetch('/api/data/demo', {
+      method: 'POST',
+      body: JSON.stringify({ force }),
+    }),
+};
+
+/**
  * Reports API
  */
 export const reportsAPI = {
@@ -174,6 +199,11 @@ export const addKey = (data) => vaultAPI.addKey(data.provider, data.label, data.
 export const deleteKey = (id) => vaultAPI.deleteKey(id);
 export const revealKey = (id) => vaultAPI.revealKey(id);
 export const importEnv = (content) => vaultAPI.importEnv(content);
+export const scanEnvFiles = (dirs) => vaultAPI.scanEnv(dirs);
+
+export const getDataStats = () => dataAPI.getStats();
+export const clearData = (start, end) => dataAPI.clear(start, end);
+export const addDemoData = (force) => dataAPI.addDemo(force);
 
 export const getBudgets = () => budgetsAPI.getAll();
 export const setBudget = (data) => budgetsAPI.createOrUpdate(data.scope, data.period, data.limit, data.scope_id);

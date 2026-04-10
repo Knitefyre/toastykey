@@ -21,8 +21,8 @@ const ACTIONS = [
   { value: 'webhook',           label: 'Webhook',                 desc: 'Send a POST request to your webhook URL (Slack, Discord, etc).' },
 ];
 
-const inputCls = 'w-full bg-bg-primary border border-border rounded-md px-3 py-2 text-text-primary text-sm focus:outline-none focus:border-success';
-const labelCls = 'block text-text-secondary text-sm mb-1';
+const inputCls = 'w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-white/80 text-[13px] focus:outline-none focus:border-accent-green/50 transition-colors duration-150';
+const labelCls = 'block text-[12px] font-medium text-white/50 mb-1.5';
 
 function defaultThreshold(type) {
   switch (type) {

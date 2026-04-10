@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, Trash2, Key as KeyIcon, Copy } from 'lucide-react';
 import Badge from '../common/Badge';
 import Button from '../common/Button';
+import Tooltip from '../common/Tooltip';
 import { maskApiKey, formatRelativeTime, formatINR } from '../../services/formatters';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -103,9 +104,16 @@ function KeyTable({ keys, loading, onDelete, onReveal }) {
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <Badge variant={statusVariant} size="sm">
-                    {key.status}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={statusVariant} size="sm">
+                      {key.status}
+                    </Badge>
+                    <Tooltip content={
+                      key.status === 'active' ? 'Key is working — last API call succeeded' :
+                      key.status === 'expired' ? 'Key failed with 401/403 — check if it expired or was revoked' :
+                      'Key hasn\'t been used in the last 30 days'
+                    } />
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-text-secondary text-sm">
                   {key.usage?.last_used ? formatRelativeTime(key.usage.last_used) : 'Never'}

@@ -8,8 +8,10 @@ describe('AnomalyDetector', () => {
 
   beforeEach(() => {
     mockDb = {
-      all: jest.fn(),
-      get: jest.fn()
+      db: {
+        all: jest.fn(),
+        get: jest.fn()
+      }
     };
     mockWsServer = {
       emit: jest.fn()
@@ -35,7 +37,7 @@ describe('AnomalyDetector', () => {
   });
 
   test('check() processes enabled triggers', async () => {
-    mockDb.all.mockResolvedValue([
+    mockDb.db.all.mockResolvedValue([
       {
         id: 1,
         trigger_type: 'rate_spike',
@@ -45,11 +47,11 @@ describe('AnomalyDetector', () => {
       }
     ]);
 
-    mockDb.get.mockResolvedValue(null); // No recent events (cooldown check)
+    mockDb.db.get.mockResolvedValue(null); // No recent events (cooldown check)
 
     await detector.check();
 
-    expect(mockDb.all).toHaveBeenCalled();
+    expect(mockDb.db.all).toHaveBeenCalled();
   });
 
   test('isCooledDown returns false when within cooldown period', async () => {
@@ -59,7 +61,7 @@ describe('AnomalyDetector', () => {
     };
 
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-    mockDb.get.mockResolvedValue({ timestamp: fiveMinutesAgo });
+    mockDb.db.get.mockResolvedValue({ timestamp: fiveMinutesAgo });
 
     const result = await detector.isCooledDown(trigger);
 
@@ -73,7 +75,7 @@ describe('AnomalyDetector', () => {
     };
 
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-    mockDb.get.mockResolvedValue({ timestamp: fifteenMinutesAgo });
+    mockDb.db.get.mockResolvedValue({ timestamp: fifteenMinutesAgo });
 
     const result = await detector.isCooledDown(trigger);
 

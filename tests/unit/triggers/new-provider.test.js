@@ -5,7 +5,9 @@ describe('New Provider Trigger', () => {
 
   beforeEach(() => {
     mockDb = {
-      all: jest.fn()
+      db: {
+        all: jest.fn()
+      }
     };
   });
 
@@ -19,13 +21,13 @@ describe('New Provider Trigger', () => {
     };
 
     // First call returns historical providers
-    mockDb.all.mockResolvedValueOnce([
+    mockDb.db.all.mockResolvedValueOnce([
       { provider: 'openai' },
       { provider: 'anthropic' }
     ]);
 
     // Second call returns recent providers (including new one)
-    mockDb.all.mockResolvedValueOnce([
+    mockDb.db.all.mockResolvedValueOnce([
       { provider: 'openai' },
       { provider: 'anthropic' },
       { provider: 'elevenlabs' }
@@ -46,12 +48,12 @@ describe('New Provider Trigger', () => {
       })
     };
 
-    mockDb.all.mockResolvedValueOnce([
+    mockDb.db.all.mockResolvedValueOnce([
       { provider: 'openai' },
       { provider: 'anthropic' }
     ]);
 
-    mockDb.all.mockResolvedValueOnce([
+    mockDb.db.all.mockResolvedValueOnce([
       { provider: 'openai' }
     ]);
 

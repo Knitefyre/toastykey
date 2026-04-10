@@ -6,7 +6,10 @@ describe('Cost Spike Trigger', () => {
 
   beforeEach(() => {
     mockDb = {
-      get: jest.fn()
+      db: {
+      get: jest.fn(),
+        all: jest.fn()
+      }
     };
     mockBaselines = {
       getCost: jest.fn()
@@ -24,7 +27,7 @@ describe('Cost Spike Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ cost: 15 });
+    mockDb.db.get.mockResolvedValue({ cost: 15 });
     mockBaselines.getCost.mockResolvedValue({ value: 4, sample_size: 100 });
 
     const result = await check(mockDb, trigger, mockBaselines);
@@ -46,7 +49,7 @@ describe('Cost Spike Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ cost: 10 });
+    mockDb.db.get.mockResolvedValue({ cost: 10 });
     mockBaselines.getCost.mockResolvedValue({ value: 4, sample_size: 100 });
 
     const result = await check(mockDb, trigger, mockBaselines);

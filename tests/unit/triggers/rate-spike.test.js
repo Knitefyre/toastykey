@@ -6,7 +6,10 @@ describe('Rate Spike Trigger', () => {
 
   beforeEach(() => {
     mockDb = {
-      get: jest.fn()
+      db: {
+      get: jest.fn(),
+        all: jest.fn()
+      }
     };
     mockBaselines = {
       getRate: jest.fn()
@@ -24,7 +27,7 @@ describe('Rate Spike Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ calls: 100 });
+    mockDb.db.get.mockResolvedValue({ calls: 100 });
     mockBaselines.getRate.mockResolvedValue({ value: 8, sample_size: 100 });
 
     const result = await check(mockDb, trigger, mockBaselines);
@@ -46,7 +49,7 @@ describe('Rate Spike Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ calls: 30 });
+    mockDb.db.get.mockResolvedValue({ calls: 30 });
     mockBaselines.getRate.mockResolvedValue({ value: 8, sample_size: 100 });
 
     const result = await check(mockDb, trigger, mockBaselines);
@@ -65,7 +68,7 @@ describe('Rate Spike Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ calls: 100 });
+    mockDb.db.get.mockResolvedValue({ calls: 100 });
     mockBaselines.getRate.mockResolvedValue({ value: 8, sample_size: 10 });
 
     const result = await check(mockDb, trigger, mockBaselines);
@@ -84,12 +87,12 @@ describe('Rate Spike Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ calls: 100 });
+    mockDb.db.get.mockResolvedValue({ calls: 100 });
     mockBaselines.getRate.mockResolvedValue({ value: 8, sample_size: 100 });
 
     await check(mockDb, trigger, mockBaselines);
 
-    const dbCall = mockDb.get.mock.calls[0][0];
+    const dbCall = mockDb.db.get.mock.calls[0][0];
     expect(dbCall).toContain("AND provider = 'openai'");
   });
 });

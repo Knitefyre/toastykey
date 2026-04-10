@@ -6,7 +6,10 @@ describe('Token Explosion Trigger', () => {
 
   beforeEach(() => {
     mockDb = {
-      get: jest.fn()
+      db: {
+      get: jest.fn(),
+        all: jest.fn()
+      }
     };
     mockBaselines = {
       getTokenAverage: jest.fn()
@@ -23,7 +26,7 @@ describe('Token Explosion Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({
+    mockDb.db.get.mockResolvedValue({
       id: 123,
       total_tokens: 50000,
       model: 'gpt-4'
@@ -52,7 +55,7 @@ describe('Token Explosion Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue(undefined);
+    mockDb.db.get.mockResolvedValue(undefined);
     mockBaselines.getTokenAverage.mockResolvedValue({
       value: 2000,
       sample_size: 100

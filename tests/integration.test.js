@@ -101,7 +101,7 @@ describe('ToastyKey Integration', () => {
   test('proxy server can start and stop', async () => {
     await server.start();
     // Server should be running
-    expect(server.server).toBeDefined();
+    expect(server.httpServer).toBeDefined();
 
     await server.stop();
     // Server should be stopped

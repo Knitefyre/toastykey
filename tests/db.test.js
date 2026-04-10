@@ -146,7 +146,7 @@ describe('Database', () => {
     const byProvider = await db.getSpendByProvider();
     expect(byProvider.length).toBe(2);
     expect(byProvider[0].provider).toBe('openai');
-    expect(byProvider[0].total_cost).toBe(850.00);
+    expect(byProvider[0].total_inr).toBe(850.00);
 
     const byProject = await db.getSpendByProject();
     expect(Array.isArray(byProject)).toBe(true);
@@ -186,7 +186,7 @@ describe('Database', () => {
 
   test('getTotalSpend throws on invalid period', async () => {
     await expect(db.getTotalSpend('invalid')).rejects.toThrow(
-      "Invalid period: invalid. Must be one of: 'all', 'today', 'week', 'month'"
+      "Invalid period: invalid. Must be one of: 'all', 'today', 'yesterday', 'week', 'month'"
     );
   });
 });

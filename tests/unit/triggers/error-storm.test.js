@@ -5,7 +5,10 @@ describe('Error Storm Trigger', () => {
 
   beforeEach(() => {
     mockDb = {
-      get: jest.fn()
+      db: {
+      get: jest.fn(),
+        all: jest.fn()
+      }
     };
   });
 
@@ -20,7 +23,7 @@ describe('Error Storm Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ total: 100, errors: 15 });
+    mockDb.db.get.mockResolvedValue({ total: 100, errors: 15 });
 
     const result = await check(mockDb, trigger, null);
 
@@ -40,7 +43,7 @@ describe('Error Storm Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ total: 100, errors: 5 });
+    mockDb.db.get.mockResolvedValue({ total: 100, errors: 5 });
 
     const result = await check(mockDb, trigger, null);
 
@@ -58,7 +61,7 @@ describe('Error Storm Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ total: 10, errors: 2 });
+    mockDb.db.get.mockResolvedValue({ total: 10, errors: 2 });
 
     const result = await check(mockDb, trigger, null);
 

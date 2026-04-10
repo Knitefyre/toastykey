@@ -42,7 +42,7 @@ describe('Budgets and Setup API', () => {
       expect(response.status).toBe(200);
       expect(data.status).toBe('ok');
       expect(data.service).toBe('toastykey-api');
-      expect(data.version).toBe('0.2.0');
+      expect(data.version).toBe('0.3.0-session3a');
       expect(data.uptime).toBeGreaterThanOrEqual(0);
     });
   });

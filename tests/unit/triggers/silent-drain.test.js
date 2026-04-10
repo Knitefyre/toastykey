@@ -5,7 +5,10 @@ describe('Silent Drain Trigger', () => {
 
   beforeEach(() => {
     mockDb = {
-      get: jest.fn()
+      db: {
+      get: jest.fn(),
+        all: jest.fn()
+      }
     };
   });
 
@@ -18,7 +21,7 @@ describe('Silent Drain Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ count: 5 });
+    mockDb.db.get.mockResolvedValue({ count: 5 });
 
     const result = await check(mockDb, trigger, null);
 
@@ -35,7 +38,7 @@ describe('Silent Drain Trigger', () => {
       })
     };
 
-    mockDb.get.mockResolvedValue({ count: 0 });
+    mockDb.db.get.mockResolvedValue({ count: 0 });
 
     const result = await check(mockDb, trigger, null);
 

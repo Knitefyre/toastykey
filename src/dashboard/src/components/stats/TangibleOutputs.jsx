@@ -5,78 +5,48 @@ import Skeleton from '../common/Skeleton';
 import { formatINR, formatUSD, formatNumber } from '../../services/formatters';
 import { useApp } from '../../contexts/AppContext';
 
+const OUTPUT_DEFS = [
+  { key: 'images',    Icon: Image,         label: 'Images',       color: '#60A5FA' },
+  { key: 'llm_calls', Icon: MessageSquare, label: 'LLM Calls',    color: '#34D399' },
+  { key: 'audio',     Icon: Music,         label: 'Audio Minutes', color: '#FBBF24' },
+];
+
 function TangibleOutputs({ outputs, loading }) {
   const { state } = useApp();
-  const currency = state.currency;
+  const fmt = (v) => state.currency === 'INR' ? formatINR(v) : formatUSD(v);
 
   if (loading) {
     return (
-      <Card
-        title="What You Got"
-        tooltip="Shows what you actually created with your API spend — images generated, LLM conversations, audio minutes. More tangible than just seeing dollar amounts."
-      >
-        <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Skeleton variant="card" className="h-24" />
-          <Skeleton variant="card" className="h-24" />
-          <Skeleton variant="card" className="h-24" />
+      <Card title="What You Got" tooltip="Tangible outputs from your API spend — images, LLM calls, audio minutes.">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[...Array(3)].map((_, i) => <Skeleton.Card key={i} />)}
         </div>
       </Card>
     );
   }
 
-  const formatCost = (cost) => {
-    return currency === 'INR' ? formatINR(cost) : formatUSD(cost);
-  };
-
-  const outputCards = [
-    {
-      icon: Image,
-      label: 'Images Generated',
-      count: outputs?.images?.count || 0,
-      cost: outputs?.images?.cost || 0,
-      color: 'text-info'
-    },
-    {
-      icon: MessageSquare,
-      label: 'LLM Calls',
-      count: outputs?.llm_calls?.count || 0,
-      cost: outputs?.llm_calls?.cost || 0,
-      color: 'text-success'
-    },
-    {
-      icon: Music,
-      label: 'Audio Minutes',
-      count: outputs?.audio?.count || 0,
-      cost: outputs?.audio?.cost || 0,
-      color: 'text-warning'
-    }
-  ];
-
   return (
-    <Card
-      title="What You Got"
-      tooltip="Shows what you actually created with your API spend — images generated, LLM conversations, audio minutes. More tangible than just seeing dollar amounts."
-    >
-      <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {outputCards.map((item) => {
-          const Icon = item.icon;
+    <Card title="What You Got" tooltip="What you actually created with your API spend — images, conversations, audio. More tangible than raw dollar amounts.">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {OUTPUT_DEFS.map(({ key, Icon, label, color }) => {
+          const count = outputs?.[key]?.count || 0;
+          const cost  = outputs?.[key]?.cost  || 0;
           return (
             <div
-              key={item.label}
-              className="bg-bg-surface border border-border rounded-md p-4 hover:bg-bg-hover transition-colors duration-200"
+              key={key}
+              className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-4 hover:bg-white/[0.04] transition-all duration-200"
             >
-              <div className="flex items-start justify-between mb-3">
-                <Icon className={`w-6 h-6 ${item.color}`} />
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"
+                style={{ backgroundColor: `${color}18` }}
+              >
+                <Icon className="w-4 h-4" style={{ color }} />
               </div>
-              <div className="text-2xl font-code font-bold text-text-primary mb-1">
-                {formatNumber(item.count)}
+              <div className="font-mono text-[22px] font-semibold text-white/90 tabular-nums leading-none mb-1">
+                {formatNumber(count)}
               </div>
-              <div className="text-text-secondary text-sm mb-1">
-                {item.label}
-              </div>
-              <div className="text-text-muted text-xs">
-                {formatCost(item.cost)}
-              </div>
+              <div className="text-[12px] text-white/40 mb-0.5">{label}</div>
+              <div className="text-[11px] text-white/20 font-mono tabular-nums">{fmt(cost)}</div>
             </div>
           );
         })}

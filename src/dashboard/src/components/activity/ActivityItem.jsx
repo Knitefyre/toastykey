@@ -4,57 +4,64 @@ import Badge from '../common/Badge';
 import { formatINR, formatUSD, formatRelativeTime } from '../../services/formatters';
 import { useApp } from '../../contexts/AppContext';
 
+const PROVIDER_VARIANT = {
+  openai:    'success',
+  anthropic: 'warning',
+};
+
 function ActivityItem({ call }) {
   const { state } = useApp();
-  const currency = state.currency;
+  const currency  = state.currency;
+  const success   = call.status === 'success';
 
-  const StatusIcon = call.status === 'success' ? CheckCircle : XCircle;
-  const statusColor = call.status === 'success' ? 'text-success' : 'text-error';
-
-  const formatCost = (costInr, costUsd) => {
-    return currency === 'INR' ? formatINR(costInr) : formatUSD(costUsd);
-  };
-
-  const providerVariant = call.provider === 'openai' ? 'success' : call.provider === 'anthropic' ? 'warning' : 'default';
+  const fmt = () => currency === 'INR'
+    ? formatINR(call.cost_inr)
+    : formatUSD(call.cost_usd);
 
   return (
-    <div className="flex items-center gap-4 p-4 bg-bg-surface border border-border rounded-md hover:bg-bg-hover transition-colors duration-200 animate-slide-in">
-      {/* Status Icon */}
-      <StatusIcon className={`w-5 h-5 ${statusColor} flex-shrink-0`} />
+    <div className="
+      flex items-center gap-3 px-4 py-3
+      bg-white/[0.02] hover:bg-white/[0.04]
+      border border-white/[0.04] hover:border-white/[0.07]
+      rounded-xl transition-all duration-150
+    ">
+      {/* Status */}
+      {success
+        ? <CheckCircle className="w-4 h-4 text-accent-green flex-shrink-0" />
+        : <XCircle    className="w-4 h-4 text-accent-red   flex-shrink-0" />
+      }
 
-      {/* Provider Badge */}
-      <Badge variant={providerVariant} size="sm">
+      {/* Provider badge */}
+      <Badge variant={PROVIDER_VARIANT[call.provider] ?? 'default'} size="sm">
         {call.provider}
       </Badge>
 
-      {/* Model and Endpoint */}
+      {/* Model / endpoint */}
       <div className="flex-1 min-w-0">
-        <div className="text-text-primary font-medium truncate">
+        <div className="text-[13px] text-white/75 font-medium truncate">
           {call.model || call.endpoint}
         </div>
         {call.project && (
-          <div className="text-text-muted text-xs truncate">
-            {call.project}
-          </div>
+          <div className="text-[11px] text-white/25 truncate">{call.project}</div>
         )}
       </div>
 
       {/* Cost */}
-      <div className="text-text-primary font-code font-medium text-sm flex-shrink-0">
-        {formatCost(call.cost_inr, call.cost_usd)}
-      </div>
+      <span className="font-mono text-[13px] text-white/60 tabular-nums flex-shrink-0">
+        {fmt()}
+      </span>
 
       {/* Latency */}
-      {call.latency_ms && (
-        <div className="text-text-secondary text-xs flex-shrink-0">
+      {call.latency_ms != null && (
+        <span className="text-[11px] text-white/25 flex-shrink-0 hidden sm:inline">
           {call.latency_ms}ms
-        </div>
+        </span>
       )}
 
-      {/* Timestamp */}
-      <div className="text-text-secondary text-sm flex-shrink-0">
+      {/* Time */}
+      <span className="text-[11px] text-white/25 flex-shrink-0">
         {formatRelativeTime(call.timestamp)}
-      </div>
+      </span>
     </div>
   );
 }

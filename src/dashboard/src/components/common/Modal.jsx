@@ -1,35 +1,24 @@
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   const modalRef = useRef(null);
   const previousFocusRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
-      // Store the element that had focus before the modal opened
       previousFocusRef.current = document.activeElement;
-
-      // Focus the modal
       modalRef.current?.focus();
 
-      // Handle escape key
       const handleEscape = (e) => {
-        if (e.key === 'Escape') {
-          onClose();
-        }
+        if (e.key === 'Escape') onClose();
       };
-
       document.addEventListener('keydown', handleEscape);
-
-      // Prevent body scroll
       document.body.style.overflow = 'hidden';
 
       return () => {
         document.removeEventListener('keydown', handleEscape);
         document.body.style.overflow = 'unset';
-
-        // Restore focus to the previously focused element
         previousFocusRef.current?.focus();
       };
     }
@@ -38,35 +27,33 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
   const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+    if (e.target === e.currentTarget) onClose();
   };
 
   const handleFocusTrap = (e) => {
-    if (!modalRef.current) return;
-
-    const focusableElements = modalRef.current.querySelectorAll(
+    if (!modalRef.current || e.key !== 'Tab') return;
+    const focusable = modalRef.current.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (e.key === 'Tab') {
-      if (e.shiftKey && document.activeElement === firstElement) {
-        e.preventDefault();
-        lastElement?.focus();
-      } else if (!e.shiftKey && document.activeElement === lastElement) {
-        e.preventDefault();
-        firstElement?.focus();
-      }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last?.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first?.focus();
     }
+  };
+
+  const sizes = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-3xl',
   };
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-slide-in"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in"
       onClick={handleBackdropClick}
       aria-modal="true"
       role="dialog"
@@ -74,25 +61,34 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     >
       <div
         ref={modalRef}
-        className="bg-bg-surface border border-border rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto"
+        className={`
+          bg-white/[0.04] border border-white/[0.1] backdrop-blur-xl
+          rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.6)]
+          ${sizes[size] ?? sizes.md}
+          w-full mx-4 max-h-[90vh] overflow-y-auto
+          animate-fade-in
+        `}
         tabIndex={-1}
         onKeyDown={handleFocusTrap}
       >
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06]">
           {title && (
-            <h2 id="modal-title" className="text-xl font-semibold text-text-primary">
+            <h2 id="modal-title" className="text-[15px] font-semibold text-white/90 tracking-tight">
               {title}
             </h2>
           )}
           <button
             onClick={onClose}
-            className="ml-auto p-1 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border"
+            className="ml-auto w-7 h-7 flex items-center justify-center rounded-lg text-white/40 hover:text-white/70 hover:bg-white/[0.06] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-green/60"
             aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="px-6 py-4">{children}</div>
+
+        {/* Body */}
+        <div className="px-6 py-5">{children}</div>
       </div>
     </div>
   );

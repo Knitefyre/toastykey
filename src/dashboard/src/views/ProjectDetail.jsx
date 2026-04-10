@@ -1,71 +1,72 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
-import Card from '../components/common/Card';
+import { ChevronLeft, DollarSign, Phone, Layers } from 'lucide-react';
 import Button from '../components/common/Button';
 import ActivityFeed from '../components/activity/ActivityFeed';
 import ProviderBreakdown from '../components/stats/ProviderBreakdown';
 import Skeleton from '../components/common/Skeleton';
+import Card from '../components/common/Card';
 import { getProject } from '../services/api';
 import { formatINR } from '../services/formatters';
 
 function ProjectDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
+  const [data, setData]     = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError]   = useState(null);
 
-  useEffect(() => {
-    loadProject();
-  }, [id]);
+  useEffect(() => { loadProject(); }, [id]);
 
   const loadProject = async () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await getProject(id);
-      setData(result);
-    } catch (err) {
-      console.error('Failed to load project:', err);
+      setData(await getProject(id));
+    } catch {
       setError('Failed to load project. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const BackButton = () => (
+    <Button variant="ghost" size="sm" onClick={() => navigate('/projects')} className="mb-6">
+      <ChevronLeft className="w-4 h-4" />
+      Back to Projects
+    </Button>
+  );
+
   if (loading) {
     return (
-      <div>
-        <Button variant="secondary" onClick={() => navigate('/projects')} className="mb-6">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Back to Projects
-        </Button>
-        <Skeleton variant="card" className="h-96" />
+      <div className="page-enter">
+        <BackButton />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          {[...Array(3)].map((_, i) => (
+            <Skeleton.Card key={i} />
+          ))}
+        </div>
+        <Skeleton className="h-64 rounded-2xl" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div>
-        <Button variant="secondary" onClick={() => navigate('/projects')} className="mb-6">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Back to Projects
-        </Button>
-        <div className="p-4 bg-bg-surface border border-error rounded-md text-error">{error}</div>
+      <div className="page-enter">
+        <BackButton />
+        <div className="flex items-center gap-3 p-4 bg-accent-red/[0.08] border border-accent-red/20 rounded-xl text-accent-red text-[13px]">
+          {error}
+        </div>
       </div>
     );
   }
 
   if (!data?.project) {
     return (
-      <div>
-        <Button variant="secondary" onClick={() => navigate('/projects')} className="mb-6">
-          <ChevronLeft className="w-4 h-4 mr-2" />
-          Back to Projects
-        </Button>
-        <div className="text-text-primary">Project not found</div>
+      <div className="page-enter">
+        <BackButton />
+        <p className="text-[13px] text-white/40">Project not found.</p>
       </div>
     );
   }
@@ -73,56 +74,43 @@ function ProjectDetail() {
   const { project, sessions, cost_by_provider } = data;
 
   return (
-    <div>
-      {/* Back button */}
-      <Button variant="secondary" onClick={() => navigate('/projects')} className="mb-6">
-        <ChevronLeft className="w-4 h-4 mr-2" />
-        Back to Projects
-      </Button>
+    <div className="space-y-6 page-enter">
+      <BackButton />
 
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-text-primary mb-2">{project.name}</h1>
-        <p className="text-text-secondary">{project.directory_path}</p>
+      <div>
+        <h1 className="text-[20px] font-semibold text-white/90 tracking-tight mb-1">{project.name}</h1>
+        {project.directory_path && (
+          <p className="text-[12px] text-white/30 font-mono">{project.directory_path}</p>
+        )}
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <div className="p-6">
-            <div className="text-3xl font-code font-bold text-text-primary mb-1">
-              {formatINR(project.total_cost, { compact: true })}
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          { icon: DollarSign, value: formatINR(project.total_cost || 0), label: 'Total Cost' },
+          { icon: Phone,      value: project.call_count || 0,              label: 'API Calls'  },
+          { icon: Layers,     value: sessions?.length || 0,                label: 'Sessions'   },
+        ].map(({ icon: Icon, value, label }) => (
+          <div key={label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 hover:bg-white/[0.05] hover:border-white/[0.1] transition-all duration-200">
+            <div className="w-8 h-8 rounded-lg bg-white/[0.05] flex items-center justify-center mb-3">
+              <Icon className="w-4 h-4 text-white/40" />
             </div>
-            <div className="text-text-secondary text-sm">Total Cost</div>
-          </div>
-        </Card>
-        <Card>
-          <div className="p-6">
-            <div className="text-3xl font-code font-bold text-text-primary mb-1">
-              {project.call_count || 0}
+            <div className="font-mono text-[24px] font-semibold text-white/90 tabular-nums leading-none mb-1.5">
+              {value}
             </div>
-            <div className="text-text-secondary text-sm">API Calls</div>
+            <div className="text-[12px] text-white/35">{label}</div>
           </div>
-        </Card>
-        <Card>
-          <div className="p-6">
-            <div className="text-3xl font-code font-bold text-text-primary mb-1">
-              {sessions?.length || 0}
-            </div>
-            <div className="text-text-secondary text-sm">Sessions</div>
-          </div>
-        </Card>
+        ))}
       </div>
 
       {/* Provider Breakdown */}
-      {cost_by_provider && cost_by_provider.length > 0 && (
-        <div className="mb-6">
-          <ProviderBreakdown data={cost_by_provider} loading={false} />
-        </div>
+      {cost_by_provider?.length > 0 && (
+        <ProviderBreakdown data={cost_by_provider} loading={false} />
       )}
 
-      {/* Recent Activity */}
-      <Card title="Recent Activity">
+      {/* Activity */}
+      <Card title="Recent Activity" noPadding>
         <div className="p-6">
           <ActivityFeed limit={10} />
         </div>

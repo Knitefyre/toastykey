@@ -109,16 +109,16 @@ function Triggers() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl font-bold text-text-primary">Anomaly Detection</h1>
-            <Tooltip content="Automatically detect unusual patterns in your API usage — cost spikes, error storms, rate spikes, or new providers. Set up triggers to get notified or auto-pause when something looks wrong." />
+          <div className="flex items-center gap-1.5 mb-1">
+            <h1 className="text-[20px] font-semibold text-white/90 tracking-tight">Anomaly Detection</h1>
+            <Tooltip content="Automatically detect unusual patterns in your API usage — cost spikes, error storms, rate spikes, or new providers." />
           </div>
-          <p className="text-text-secondary">Configure triggers to detect and respond to unusual API activity</p>
+          <p className="text-[13px] text-white/35">Configure triggers to detect and respond to unusual API activity</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={loadData}
-            className="p-2 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.05] transition-all"
             aria-label="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -134,25 +134,25 @@ function Triggers() {
       <PauseBanner paused={paused} onResume={handleResume} />
 
       {error && (
-        <div className="p-4 bg-bg-surface border border-error rounded-md text-error mb-4">{error}</div>
+        <div className="p-4 bg-accent-red/[0.08] border border-accent-red/20 rounded-xl text-accent-red text-[13px] mb-4">{error}</div>
       )}
 
       {/* Tabs + triggers */}
       <Card>
-        <div className="border-b border-border px-6 pt-4">
+        <div className="border-b border-white/[0.06] px-6 pt-2">
           <div className="flex gap-6">
             {TABS.map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`pb-3 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
+                className={`pb-3 text-[13px] font-medium capitalize transition-colors border-b-2 -mb-px ${
                   activeTab === tab
-                    ? 'border-success text-success'
-                    : 'border-transparent text-text-secondary hover:text-text-primary'
+                    ? 'border-accent-green text-accent-green'
+                    : 'border-transparent text-white/35 hover:text-white/70'
                 }`}
               >
                 {tab}
-                <span className="ml-2 text-xs text-text-muted">
+                <span className="ml-1.5 text-[11px] text-white/20">
                   ({triggers.filter(t => t.scope === tab).length})
                 </span>
               </button>
@@ -163,13 +163,13 @@ function Triggers() {
         <div className="p-6">
           {loading ? (
             <div className="space-y-3">
-              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-20" />)}
+              {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 rounded-xl" />)}
             </div>
           ) : filteredTriggers.length === 0 ? (
-            <div className="text-center py-10 text-text-muted">
-              <p className="mb-3">No {activeTab} triggers configured</p>
-              <Button variant="secondary" onClick={openAddModal}>
-                <Plus className="w-4 h-4 mr-2" />
+            <div className="text-center py-12">
+              <p className="text-[13px] text-white/35 mb-4">No {activeTab} triggers configured</p>
+              <Button variant="secondary" size="sm" onClick={openAddModal}>
+                <Plus className="w-4 h-4" />
                 Add your first trigger
               </Button>
             </div>

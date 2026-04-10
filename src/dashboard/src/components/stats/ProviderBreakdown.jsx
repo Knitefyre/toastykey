@@ -1,8 +1,7 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import Card from '../common/Card';
 import Skeleton from '../common/Skeleton';
-import { formatINR, formatUSD, formatPercent } from '../../services/formatters';
+import { formatINR, formatUSD } from '../../services/formatters';
 import { useApp } from '../../contexts/AppContext';
 import { getColor } from '../../utils/providerColors';
 
@@ -10,80 +9,57 @@ function ProviderBreakdown({ data, loading }) {
   const { state } = useApp();
   const currency = state.currency;
 
+  const fmt = (v) => currency === 'INR' ? formatINR(v, { compact: true }) : formatUSD(v);
+
   if (loading) {
     return (
-      <Card
-        title="Provider Breakdown"
-        tooltip="Shows how much you're spending with each AI provider. Helps you understand which services cost the most."
-      >
-        <div className="p-6">
-          <Skeleton variant="card" className="h-64" />
+      <Card title="Provider Breakdown" tooltip="Spending per AI provider.">
+        <div className="space-y-3">
+          {[...Array(4)].map((_, i) => <Skeleton.Row key={i} />)}
         </div>
       </Card>
     );
   }
 
-  // Sort descending by amount
-  const sortedData = [...(data || [])].sort((a, b) => b.amount - a.amount);
+  const sorted = [...(data || [])].sort((a, b) => b.amount - a.amount);
+  const total  = sorted.reduce((s, p) => s + (p.amount || 0), 0);
 
-  const formatCurrency = (value) => {
-    return currency === 'INR' ? formatINR(value, { compact: true }) : formatUSD(value);
-  };
+  if (sorted.length === 0) {
+    return (
+      <Card title="Provider Breakdown" tooltip="Spending per AI provider.">
+        <p className="text-[13px] text-white/25 text-center py-6">No provider data yet</p>
+      </Card>
+    );
+  }
 
   return (
-    <Card
-      title="Provider Breakdown"
-      tooltip="Shows how much you're spending with each AI provider. Helps you understand which services cost the most."
-    >
-      <div className="p-6">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={sortedData} layout="horizontal">
-            <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
-            <XAxis
-              type="number"
-              stroke="#94A3B8"
-              style={{ fontSize: '12px' }}
-              tickFormatter={formatCurrency}
-            />
-            <YAxis
-              type="category"
-              dataKey="provider"
-              stroke="#94A3B8"
-              style={{ fontSize: '12px' }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: '#1B2336',
-                border: '1px solid #475569',
-                borderRadius: '0.5rem',
-                color: '#F8FAFC'
-              }}
-              formatter={(value, name) => [formatCurrency(value), 'Spend']}
-            />
-            <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
-              {sortedData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={getColor(entry.provider)} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-        <div className="mt-4 space-y-2">
-          {sortedData.map((item) => (
-            <div key={item.provider} className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-3 h-3 rounded-sm"
-                  style={{ backgroundColor: getColor(item.provider) }}
-                />
-                <span className="text-text-primary font-medium">{item.provider}</span>
+    <Card title="Provider Breakdown" tooltip="How much you're spending with each AI provider.">
+      <div className="space-y-4">
+        {sorted.map((item) => {
+          const pct   = total > 0 ? (item.amount / total) * 100 : 0;
+          const color = getColor(item.provider);
+          return (
+            <div key={item.provider}>
+              <div className="flex items-center justify-between mb-1.5 text-[12px]">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                  <span className="text-white/70 font-medium">{item.provider}</span>
+                </div>
+                <div className="flex items-center gap-3 text-right">
+                  <span className="font-mono text-white/60 tabular-nums">{fmt(item.amount)}</span>
+                  <span className="text-white/25 w-10 text-right">{pct.toFixed(0)}%</span>
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-text-secondary">{formatCurrency(item.amount)}</span>
-                <span className="text-text-muted">{formatPercent(item.percentage)}</span>
+              {/* Bar */}
+              <div className="w-full h-1 bg-white/[0.05] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${pct}%`, backgroundColor: color }}
+                />
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </Card>
   );

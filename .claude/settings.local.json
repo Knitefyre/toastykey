@@ -45,7 +45,24 @@
       "Bash(find src/triggers/actions -name \"*.js\" -exec sed -i '' 's/await db\\\\.get\\(/await db.db.get\\(/g' {} \\\\;)",
       "Bash(find src/triggers/actions -name \"*.js\" -exec sed -i '' 's/await db\\\\.all\\(/await db.db.all\\(/g' {} \\\\;)",
       "Bash(pkill -f \"vite.*dashboard\")",
-      "Bash(amp)"
+      "Bash(amp)",
+      "Bash(curl -s -I http://localhost:5173/)",
+      "Bash(curl -s -I http://localhost:3000/)",
+      "Bash(tee /tmp/test-output.txt)",
+      "Bash(OPENAI_API_KEY=\"sk-proj-$\\(node -e \"process.stdout.write\\('a'.repeat\\(48\\)\\)\"\\)\" node -e \"const KeyScanner = require\\('./src/setup/KeyScanner'\\); const s = new KeyScanner\\(null\\); const keys = s.scanEnvironment\\(\\); console.log\\('Found keys:', keys.length\\); if \\(keys.length > 0\\) { const k = keys[0]; console.log\\('Has provider:', k.provider ? 'YES' : 'NO'\\); console.log\\('Has key:', k.key ? 'YES' : 'NO'\\); console.log\\('source=environment:', k.source === 'environment' ? 'YES' : 'NO'\\); console.log\\('label=shell-env:', k.label === 'shell-env' ? 'YES' : 'NO'\\); console.log\\('Has envVar:', k.envVar ? 'YES' : 'NO'\\); }\")",
+      "Bash(wc -l src/dashboard/src/views/*.jsx)",
+      "Bash(grep -l \"mockDb = {\" tests/unit/triggers/*.js)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl -s http://localhost:4000/api/stats/overview)",
+      "Bash(curl -s http://localhost:4000/health)",
+      "Bash(curl -s http://localhost:4000/)",
+      "Bash(curl -s http://localhost:4000/api/triggers/events)",
+      "Bash(curl -s http://localhost:4000/api/triggers)",
+      "Bash(curl -s http://localhost:4000/api/reports)",
+      "Bash(curl -s http://localhost:4000/api/triggers/status)",
+      "Bash(curl -s \"http://localhost:4000/api/stats/daily?days=30\")",
+      "Bash(curl -s http://localhost:4000/api/budgets)",
+      "Bash(curl -s http://localhost:4000/api/tangible-outputs)"
     ]
   }
 }

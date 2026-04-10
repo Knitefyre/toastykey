@@ -103,12 +103,12 @@ function KeyVault() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-2">
-            <h1 className="text-2xl font-bold text-text-primary">Key Vault</h1>
-            <Tooltip content="Your API keys are encrypted locally with AES-256-GCM and never leave your machine. ToastyKey uses these keys to proxy API calls and track costs." />
+          <div className="flex items-center gap-1.5 mb-1">
+            <h1 className="text-[20px] font-semibold text-white/90 tracking-tight">Key Vault</h1>
+            <Tooltip content="Your API keys are encrypted locally with AES-256-GCM and never leave your machine." />
           </div>
-          <p className="text-text-secondary">
-            Securely manage your API keys with AES-256-GCM encryption
+          <p className="text-[13px] text-white/35">
+            AES-256-GCM encrypted · local only
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -124,8 +124,8 @@ function KeyVault() {
       </div>
 
       {/* Key Table */}
-      <Card>
-        <div className="p-6">
+      <Card noPadding>
+        <div className="px-6 py-2">
           <KeyTable
             keys={keys}
             loading={loading}
@@ -158,7 +158,7 @@ function KeyVault() {
               Paste .env file content
             </label>
             <textarea
-              className="w-full h-48 px-3 py-2 bg-bg-base border border-border rounded-md text-text-primary text-sm font-mono focus:outline-none focus:ring-2 focus:ring-success resize-none"
+              className="input-base h-48 font-mono text-[12px] resize-none"
               placeholder="OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-..."
               value={envContent}

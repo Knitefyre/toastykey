@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "first_run_complete": true,
+  "first_run_timestamp": "2026-04-10T04:09:36.433Z",
+  "scan": {
+    "paths": [
+      "/Users/bakatoast/Toasty OS/toastykey"
+    ],
+    "last_scan_timestamp": "2026-04-10T04:09:36.434Z",
+    "ignored_keys": [],
+    "auto_scan_on_start": true,
+    "scan_history": []
+  },
+  "watch": {
+    "enabled": false,
+    "directories": [],
+    "max_depth": 3,
+    "exclude_patterns": [
+      "node_modules",
+      ".venv",
+      "venv",
+      "target",
+      "build",
+      "dist",
+      ".git"
+    ]
+  },
+  "preferences": {
+    "currency": "USD",
+    "auto_open_browser": true,
+    "port": 4000,
+    "skip_banner": false
+  }
+}

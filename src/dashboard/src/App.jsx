@@ -38,7 +38,6 @@ function AppContent() {
   const [needsSetup, setNeedsSetup] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { socket } = useWebSocket();
   const { showToast } = useToast();
 
@@ -54,11 +53,6 @@ function AppContent() {
         e.preventDefault();
         setShowCommandPalette(true);
       }
-      // Cmd+B / Ctrl+B - Toggle Sidebar
-      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
-        e.preventDefault();
-        setSidebarCollapsed(prev => !prev);
-      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -70,7 +64,6 @@ function AppContent() {
     if (!socket) return;
 
     const handleProjectDetected = (project) => {
-      console.log('[Dashboard] New project detected:', project);
       showToast(
         `New project detected: ${project.name} (${project.type})`,
         'info'
@@ -102,12 +95,10 @@ function AppContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
+      <div className="min-h-screen flex items-center justify-center bg-[#09090B]">
         <div className="text-center">
-          <h1 className="text-4xl font-code font-bold text-success mb-4">
-            🔥 ToastyKey
-          </h1>
-          <p className="text-text-secondary">Loading...</p>
+          <div className="w-10 h-10 rounded-full border-2 border-accent-green/30 border-t-accent-green animate-spin mx-auto mb-4" />
+          <p className="text-[13px] text-white/30">Loading ToastyKey...</p>
         </div>
       </div>
     );
@@ -124,13 +115,13 @@ function AppContent() {
   return (
     <div key="dashboard">
       <Routes>
-        <Route path="/" element={<Layout collapsed={sidebarCollapsed}><Overview /></Layout>} />
-        <Route path="/projects" element={<Layout collapsed={sidebarCollapsed}><Projects /></Layout>} />
-        <Route path="/projects/:id" element={<Layout collapsed={sidebarCollapsed}><ProjectDetail /></Layout>} />
-        <Route path="/vault" element={<Layout collapsed={sidebarCollapsed}><KeyVault /></Layout>} />
-        <Route path="/triggers" element={<Layout collapsed={sidebarCollapsed}><Triggers /></Layout>} />
-        <Route path="/reports" element={<Layout collapsed={sidebarCollapsed}><Reports /></Layout>} />
-        <Route path="/settings" element={<Layout collapsed={sidebarCollapsed}><Settings /></Layout>} />
+        <Route path="/" element={<Layout onSearchOpen={() => setShowCommandPalette(true)}><Overview /></Layout>} />
+        <Route path="/projects" element={<Layout onSearchOpen={() => setShowCommandPalette(true)}><Projects /></Layout>} />
+        <Route path="/projects/:id" element={<Layout onSearchOpen={() => setShowCommandPalette(true)}><ProjectDetail /></Layout>} />
+        <Route path="/vault" element={<Layout onSearchOpen={() => setShowCommandPalette(true)}><KeyVault /></Layout>} />
+        <Route path="/triggers" element={<Layout onSearchOpen={() => setShowCommandPalette(true)}><Triggers /></Layout>} />
+        <Route path="/reports" element={<Layout onSearchOpen={() => setShowCommandPalette(true)}><Reports /></Layout>} />
+        <Route path="/settings" element={<Layout onSearchOpen={() => setShowCommandPalette(true)}><Settings /></Layout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <CommandPalette isOpen={showCommandPalette} onClose={() => setShowCommandPalette(false)} />

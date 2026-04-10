@@ -104,16 +104,16 @@ function Reports() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-2xl font-bold text-text-primary">Usage Reports</h1>
-            <Tooltip content="Generate detailed breakdowns of your API spending — by provider, project, model, time period. Great for end-of-month reviews or tracking specific projects." />
+          <div className="flex items-center gap-1.5 mb-1">
+            <h1 className="text-[20px] font-semibold text-white/90 tracking-tight">Usage Reports</h1>
+            <Tooltip content="Generate detailed breakdowns of your API spending — by provider, project, model, time period." />
           </div>
-          <p className="text-text-secondary">Generate comprehensive cost reports and analytics</p>
+          <p className="text-[13px] text-white/35">Generate comprehensive cost reports and analytics</p>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={loadReports}
-            className="p-2 rounded-md text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-white/30 hover:text-white/70 hover:bg-white/[0.05] transition-all"
             aria-label="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -126,7 +126,7 @@ function Reports() {
       </div>
 
       {error && (
-        <div className="p-4 bg-bg-surface border border-error rounded-md text-error mb-4">{error}</div>
+        <div className="p-4 bg-accent-red/[0.08] border border-accent-red/20 rounded-xl text-accent-red text-[13px] mb-4">{error}</div>
       )}
 
       {/* Reports List */}
@@ -134,67 +134,51 @@ function Reports() {
         {loading ? (
           [...Array(3)].map((_, i) => <Skeleton key={i} className="h-32" />)
         ) : reports.length === 0 ? (
-          <Card>
-            <div className="p-12 text-center">
-              <FileText className="w-16 h-16 text-text-muted mx-auto mb-4" />
-              <h2 className="text-lg font-semibold text-text-primary mb-2">No reports yet</h2>
-              <p className="text-text-secondary mb-6">Generate your first report to see spending insights</p>
-              <Button variant="primary" onClick={() => setShowGenerateModal(true)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Generate Report
-              </Button>
+          <div className="flex flex-col items-center justify-center py-20 bg-white/[0.02] border border-white/[0.06] rounded-2xl">
+            <div className="w-12 h-12 rounded-2xl bg-white/[0.04] flex items-center justify-center mb-4">
+              <FileText className="w-6 h-6 text-white/20" />
             </div>
-          </Card>
+            <p className="text-[14px] font-medium text-white/50 mb-1">No reports yet</p>
+            <p className="text-[12px] text-white/25 mb-5">Generate your first report to see spending insights</p>
+            <Button variant="secondary" size="sm" onClick={() => setShowGenerateModal(true)}>
+              <Plus className="w-4 h-4" />
+              Generate Report
+            </Button>
+          </div>
         ) : (
           reports.map(report => {
             const summary = report.summary_json ? JSON.parse(report.summary_json) : null;
             return (
-              <Card key={report.id}>
-                <div className="p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        {getReportTypeBadge(report.period)}
-                        <h3 className="text-text-primary font-semibold">{report.period}</h3>
+              <div key={report.id} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 hover:bg-white/[0.05] hover:border-white/[0.1] transition-all duration-200 group">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2.5 mb-1.5">
+                      {getReportTypeBadge(report.period)}
+                      <h3 className="text-[13px] font-medium text-white/80 truncate">{report.period}</h3>
+                    </div>
+                    <p className="text-[12px] text-white/30 mb-3">
+                      Generated {getRelativeTime(report.generated_at)}
+                    </p>
+                    {summary?.summary && (
+                      <div className="flex items-center gap-4 text-[12px] flex-wrap">
+                        <span className="text-white/30">Total: <span className="text-white/65 font-mono tabular-nums">{formatCurrency(summary.summary.total_usd)}</span></span>
+                        <span className="text-white/30">Calls: <span className="text-white/65">{summary.summary.total_calls}</span></span>
+                        <span className="text-white/30">Providers: <span className="text-white/65">{summary.summary.provider_count}</span></span>
                       </div>
-                      <p className="text-text-secondary text-sm mb-3">
-                        Generated {getRelativeTime(report.generated_at)}
-                      </p>
-                      {summary?.summary && (
-                        <div className="flex items-center gap-4 text-sm">
-                          <span className="text-text-muted">
-                            Total: <span className="text-text-primary font-medium">
-                              {formatCurrency(summary.summary.total_usd)}
-                            </span>
-                          </span>
-                          <span className="text-text-muted">
-                            Calls: <span className="text-text-primary font-medium">
-                              {summary.summary.total_calls}
-                            </span>
-                          </span>
-                          <span className="text-text-muted">
-                            Providers: <span className="text-text-primary font-medium">
-                              {summary.summary.provider_count}
-                            </span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button variant="secondary" size="sm" onClick={() => handleView(report.id)}>
-                        View
-                      </Button>
-                      <button
-                        onClick={() => handleDelete(report.id)}
-                        className="p-2 rounded-md text-text-secondary hover:text-error hover:bg-bg-hover transition-colors"
-                        aria-label="Delete"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Button variant="secondary" size="sm" onClick={() => handleView(report.id)}>View</Button>
+                    <button
+                      onClick={() => handleDelete(report.id)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-white/25 hover:text-accent-red hover:bg-white/[0.05] transition-all opacity-0 group-hover:opacity-100"
+                      aria-label="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              </Card>
+              </div>
             );
           })
         )}
@@ -266,15 +250,11 @@ function GenerateModal({ isOpen, onClose, onGenerate, generating }) {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Generate Report">
+    <Modal isOpen={isOpen} onClose={onClose} title="Generate Report" size="sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-text-primary text-sm font-medium mb-2">Report Type</label>
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="w-full px-3 py-2 bg-bg-surface border border-border rounded-md text-text-primary focus:outline-none focus:ring-2 focus:ring-success"
-          >
+          <label className="block text-[12px] font-medium text-white/50 mb-1.5">Report Type</label>
+          <select value={type} onChange={(e) => setType(e.target.value)} className="input-base">
             <option value="daily">Daily</option>
             <option value="weekly">Weekly</option>
             <option value="monthly">Monthly</option>
@@ -285,24 +265,12 @@ function GenerateModal({ isOpen, onClose, onGenerate, generating }) {
         {type === 'custom' && (
           <>
             <div>
-              <label className="block text-text-primary text-sm font-medium mb-2">Start Date</label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 bg-bg-surface border border-border rounded-md text-text-primary focus:outline-none focus:ring-2 focus:ring-success"
-                required
-              />
+              <label className="block text-[12px] font-medium text-white/50 mb-1.5">Start Date</label>
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="input-base" required />
             </div>
             <div>
-              <label className="block text-text-primary text-sm font-medium mb-2">End Date</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2 bg-bg-surface border border-border rounded-md text-text-primary focus:outline-none focus:ring-2 focus:ring-success"
-                required
-              />
+              <label className="block text-[12px] font-medium text-white/50 mb-1.5">End Date</label>
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="input-base" required />
             </div>
           </>
         )}
@@ -330,48 +298,31 @@ function ReportDetailModal({ isOpen, onClose, report, formatCurrency }) {
       <div className="space-y-6 max-h-[70vh] overflow-y-auto px-1">
         {/* Summary Stats */}
         {summary?.summary && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-bg-surface border border-border rounded-md p-4">
-              <div className="text-text-muted text-xs mb-1">Total Spend</div>
-              <div className="text-text-primary text-xl font-bold">
-                {formatCurrency(summary.summary.total_usd)}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { label: 'Total Spend', value: formatCurrency(summary.summary.total_usd) },
+              { label: 'API Calls',   value: summary.summary.total_calls },
+              { label: 'Providers',   value: summary.summary.provider_count },
+              { label: 'Projects',    value: summary.summary.project_count },
+            ].map(({ label, value }) => (
+              <div key={label} className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-3">
+                <div className="text-[11px] text-white/30 mb-1">{label}</div>
+                <div className="font-mono text-[18px] font-semibold text-white/85 tabular-nums">{value}</div>
               </div>
-            </div>
-            <div className="bg-bg-surface border border-border rounded-md p-4">
-              <div className="text-text-muted text-xs mb-1">API Calls</div>
-              <div className="text-text-primary text-xl font-bold">
-                {summary.summary.total_calls}
-              </div>
-            </div>
-            <div className="bg-bg-surface border border-border rounded-md p-4">
-              <div className="text-text-muted text-xs mb-1">Providers</div>
-              <div className="text-text-primary text-xl font-bold">
-                {summary.summary.provider_count}
-              </div>
-            </div>
-            <div className="bg-bg-surface border border-border rounded-md p-4">
-              <div className="text-text-muted text-xs mb-1">Projects</div>
-              <div className="text-text-primary text-xl font-bold">
-                {summary.summary.project_count}
-              </div>
-            </div>
+            ))}
           </div>
         )}
 
         {/* Trend */}
         {summary?.trends && (
-          <div className="bg-bg-surface border border-border rounded-md p-4">
-            <h3 className="text-text-primary font-semibold mb-3 flex items-center gap-2">
+          <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4">
+            <h3 className="text-[13px] font-semibold text-white/70 mb-3 flex items-center gap-2">
               <TrendingUp className="w-4 h-4" />
               Trend Comparison
             </h3>
-            <div className="flex items-center gap-6 text-sm">
-              <span className="text-text-muted">
-                Previous Period: <span className="text-text-primary font-medium">
-                  {formatCurrency(summary.trends.previous)}
-                </span>
-              </span>
-              <span className={`font-medium ${summary.trends.change >= 0 ? 'text-error' : 'text-success'}`}>
+            <div className="flex items-center gap-4 text-[12px]">
+              <span className="text-white/35">Previous: <span className="text-white/65 font-mono">{formatCurrency(summary.trends.previous)}</span></span>
+              <span className={`font-semibold ${summary.trends.change >= 0 ? 'text-accent-red' : 'text-accent-green'}`}>
                 {summary.trends.change >= 0 ? '↑' : '↓'} {Math.abs(summary.trends.change).toFixed(1)}%
               </span>
             </div>

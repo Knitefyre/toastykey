@@ -76,8 +76,8 @@ async function generateDemoData(db, vault) {
 
   for (const proj of PROJECTS) {
     await db.run(
-      'INSERT INTO projects (name, path, type, auto_detected, detected_at) VALUES (?, ?, ?, ?, ?)',
-      [proj.name, proj.path, 'node', 1, new Date().toISOString()]
+      'INSERT INTO projects (name, directory_path) VALUES (?, ?)',
+      [proj.name, proj.path]
     );
     const result = await db.db.get('SELECT last_insert_rowid() as id');
     projectIds[proj.name] = result.id;
@@ -131,66 +131,57 @@ async function generateDemoData(db, vault) {
   // 4. Generate Budgets
   console.log('\n[DemoMode] Creating budgets...');
   await db.run(
-    'INSERT INTO budgets (scope, scope_id, period, limit_amount, current_spend, currency) VALUES (?, ?, ?, ?, ?, ?)',
-    ['global', null, 'daily', 500, randomFloat(100, 400), 'INR']
+    'INSERT INTO budgets (scope, scope_id, period, limit_amount, current_spend) VALUES (?, ?, ?, ?, ?)',
+    ['global', null, 'daily', 500, randomFloat(100, 400)]
   );
   console.log('  ✓ Global daily budget: ₹500');
 
   await db.run(
-    'INSERT INTO budgets (scope, scope_id, period, limit_amount, current_spend, currency) VALUES (?, ?, ?, ?, ?, ?)',
-    ['provider', 'openai', 'monthly', 5000, randomFloat(2000, 4500), 'INR']
+    'INSERT INTO budgets (scope, scope_id, period, limit_amount, current_spend) VALUES (?, ?, ?, ?, ?)',
+    ['provider', 'openai', 'monthly', 5000, randomFloat(2000, 4500)]
   );
   console.log('  ✓ OpenAI monthly budget: ₹5000');
 
   // 5. Generate Triggers
   console.log('\n[DemoMode] Creating triggers...');
   await db.run(
-    `INSERT INTO triggers (name, scope, scope_id, trigger_type, threshold, action, webhook_url, enabled, cooldown_minutes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO triggers (scope, scope_id, trigger_type, threshold, action, enabled)
+     VALUES (?, ?, ?, ?, ?, ?)`,
     [
-      'Global Rate Spike',
       'global',
       null,
       'rate_spike',
-      JSON.stringify({ multiplier: 5, window_minutes: 2, min_sample_size: 5 }),
+      5.0,
       'dashboard_notify',
-      null,
-      1,
-      10
+      1
     ]
   );
   console.log('  ✓ Rate spike trigger (global)');
 
   await db.run(
-    `INSERT INTO triggers (name, scope, scope_id, trigger_type, threshold, action, webhook_url, enabled, cooldown_minutes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO triggers (scope, scope_id, trigger_type, threshold, action, enabled)
+     VALUES (?, ?, ?, ?, ?, ?)`,
     [
-      'OpenAI Cost Spike',
       'provider',
       'openai',
       'cost_spike',
-      JSON.stringify({ multiplier: 3, window_minutes: 60, min_sample_size: 5 }),
+      3.0,
       'auto_pause',
-      null,
-      1,
-      30
+      1
     ]
   );
   console.log('  ✓ Cost spike trigger (openai)');
 
   await db.run(
-    `INSERT INTO triggers (name, scope, scope_id, trigger_type, threshold, action, webhook_url, enabled, cooldown_minutes)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO triggers (scope, scope_id, trigger_type, threshold, action, enabled)
+     VALUES (?, ?, ?, ?, ?, ?)`,
     [
-      'Global Error Storm',
       'global',
       null,
       'error_storm',
-      JSON.stringify({ threshold_percent: 50, min_sample_size: 10, window_minutes: 10 }),
+      50.0,
       'dashboard_notify',
-      null,
-      1,
-      15
+      1
     ]
   );
   console.log('  ✓ Error storm trigger (global)');
@@ -202,17 +193,17 @@ async function generateDemoData(db, vault) {
     const timestamp = randomDate(7).toISOString();
 
     await db.run(
-      `INSERT INTO trigger_events (trigger_id, detected_at, trigger_type, scope, scope_id, metric_value, baseline_value, message)
+      `INSERT INTO trigger_events (trigger_id, timestamp, entity_type, entity_id, metric_value, baseline_value, details, action_taken)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         triggerId,
         timestamp,
-        'cost_spike',
         'global',
         null,
         randomFloat(500, 1000),
         randomFloat(100, 200),
-        `Cost spike detected: ₹${randomInt(500, 1000)} (3x baseline)`
+        `Cost spike detected: ₹${randomInt(500, 1000)} (3x baseline)`,
+        'dashboard_notify'
       ]
     );
   }
@@ -232,13 +223,10 @@ async function generateDemoData(db, vault) {
   };
 
   await db.run(
-    `INSERT INTO reports (name, type, start_date, end_date, data, generated_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO reports (period, summary_json, generated_at)
+     VALUES (?, ?, ?)`,
     [
-      'Weekly Report',
       'weekly',
-      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      new Date().toISOString(),
       JSON.stringify(weeklyReport),
       new Date().toISOString()
     ]
@@ -257,13 +245,10 @@ async function generateDemoData(db, vault) {
   };
 
   await db.run(
-    `INSERT INTO reports (name, type, start_date, end_date, data, generated_at)
-     VALUES (?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO reports (period, summary_json, generated_at)
+     VALUES (?, ?, ?)`,
     [
-      'Monthly Report',
       'monthly',
-      new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-      new Date().toISOString(),
       JSON.stringify(monthlyReport),
       new Date().toISOString()
     ]

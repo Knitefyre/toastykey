@@ -1,0 +1,53 @@
+# Test files
+tests/
+*.test.js
+*.spec.js
+coverage/
+
+# Documentation
+docs/
+*.pdf
+
+# GitHub
+.github/
+
+# Screenshots and media
+screenshots/
+*.png
+*.jpg
+*.gif
+
+# Database files
+*.db
+*.db-shm
+*.db-wal
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Development
+.env.example
+.env.local
+.env.test
+node_modules/
+
+# Build artifacts
+src/dashboard/dist/
+src/dashboard/node_modules/
+src/dashboard/.vite/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Claude/Superpowers
+.claude/
+docs/superpowers/

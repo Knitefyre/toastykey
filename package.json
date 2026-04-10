@@ -1,6 +1,6 @@
 {
   "name": "toastykey",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Track. Control. Understand. The API cost layer for AI-native builders.",
   "main": "src/index.js",
   "bin": {
@@ -16,16 +16,39 @@
     "dev": "concurrently \"npm start\" \"npm run dashboard:dev\"",
     "build": "npm run dashboard:build",
     "start:prod": "NODE_ENV=production npm start",
-    "postinstall": "chmod +x bin/toastykey.js || true"
+    "postinstall": "chmod +x bin/toastykey.js || true",
+    "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
-    "api-costs",
+    "mcp",
+    "api-cost",
+    "ai-tools",
+    "claude-code",
+    "budget",
     "proxy",
-    "tracking",
-    "monitoring"
+    "api-tracking",
+    "cost-monitoring",
+    "openai",
+    "anthropic"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Toasty Media Pvt. Ltd.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Knitefyre/toastykey.git"
+  },
+  "homepage": "https://github.com/Knitefyre/toastykey#readme",
+  "bugs": {
+    "url": "https://github.com/Knitefyre/toastykey/issues"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "pricing/",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "axios": "^1.6.2",

@@ -73,6 +73,10 @@ function ProjectDetail() {
 
   const { project, sessions, cost_by_provider } = data;
 
+  // `project.total_cost` is a denormalised column that may not be updated —
+  // sum live from cost_by_provider instead.
+  const totalCostINR = (cost_by_provider || []).reduce((s, p) => s + (p.cost_inr || 0), 0);
+
   return (
     <div className="space-y-6 page-enter">
       <BackButton />
@@ -88,9 +92,9 @@ function ProjectDetail() {
       {/* Stat cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { icon: DollarSign, value: formatINR(project.total_cost || 0), label: 'Total Cost' },
-          { icon: Phone,      value: project.call_count || 0,              label: 'API Calls'  },
-          { icon: Layers,     value: sessions?.length || 0,                label: 'Sessions'   },
+          { icon: DollarSign, value: formatINR(totalCostINR), label: 'Total Cost' },
+          { icon: Phone,      value: project.call_count || 0,  label: 'API Calls' },
+          { icon: Layers,     value: sessions?.length || 0,    label: 'Sessions'  },
         ].map(({ icon: Icon, value, label }) => (
           <div key={label} className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-5 hover:bg-white/[0.05] hover:border-white/[0.1] transition-all duration-200">
             <div className="w-8 h-8 rounded-lg bg-white/[0.05] flex items-center justify-center mb-3">

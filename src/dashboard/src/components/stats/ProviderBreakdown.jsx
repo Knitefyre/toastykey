@@ -21,7 +21,15 @@ function ProviderBreakdown({ data, loading }) {
     );
   }
 
-  const sorted = [...(data || [])].sort((a, b) => b.amount - a.amount);
+  // API returns `total_inr` / `total_usd` (global endpoint) or
+  // `cost_inr` / `cost_usd` (project-detail endpoint) — normalise to `amount`
+  const normalised = (data || []).map(p => ({
+    ...p,
+    amount: currency === 'INR'
+      ? (p.total_inr ?? p.cost_inr ?? p.amount ?? 0)
+      : (p.total_usd ?? p.cost_usd ?? p.amount ?? 0),
+  }));
+  const sorted = [...normalised].sort((a, b) => b.amount - a.amount);
   const total  = sorted.reduce((s, p) => s + (p.amount || 0), 0);
 
   if (sorted.length === 0) {

@@ -15,11 +15,11 @@ function createVaultRouter(db, vault, wsServer) {
             COUNT(*) as call_count,
             SUM(cost_inr) as total_cost,
             MAX(timestamp) as last_used,
-            MAX(CASE WHEN status_code BETWEEN 200 AND 299 THEN timestamp END) as last_success,
-            MAX(CASE WHEN status_code IN (401, 403) THEN timestamp END) as last_auth_error
+            MAX(CASE WHEN status BETWEEN 200 AND 299 THEN timestamp END) as last_success,
+            MAX(CASE WHEN status IN (401, 403) THEN timestamp END) as last_auth_error
           FROM api_calls
-          WHERE api_key_id = ?
-        `, [key.id]);
+          WHERE provider = ?
+        `, [key.provider]);
 
         // Determine status
         let status = 'active';

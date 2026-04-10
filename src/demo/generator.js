@@ -116,9 +116,9 @@ async function generateDemoData(db, vault) {
       output_tokens: outputTokens,
       cost_usd: cost / 85,
       cost_inr: cost,
-      status_code: statusCode,
+      status: statusCode,
       api_key_id: keyIds[provider],
-      project: project.path,
+      project: project.name,
       timestamp
     });
 
@@ -132,13 +132,13 @@ async function generateDemoData(db, vault) {
   console.log('\n[DemoMode] Creating budgets...');
   await db.run(
     'INSERT INTO budgets (scope, scope_id, period, limit_amount, current_spend) VALUES (?, ?, ?, ?, ?)',
-    ['global', null, 'daily', 500, randomFloat(100, 400)]
+    ['global', null, 'day', 500, randomFloat(100, 400)]
   );
   console.log('  ✓ Global daily budget: ₹500');
 
   await db.run(
     'INSERT INTO budgets (scope, scope_id, period, limit_amount, current_spend) VALUES (?, ?, ?, ?, ?)',
-    ['provider', 'openai', 'monthly', 5000, randomFloat(2000, 4500)]
+    ['provider', 'openai', 'month', 5000, randomFloat(2000, 4500)]
   );
   console.log('  ✓ OpenAI monthly budget: ₹5000');
 
@@ -151,7 +151,7 @@ async function generateDemoData(db, vault) {
       'global',
       null,
       'rate_spike',
-      5.0,
+      JSON.stringify({ multiplier: 5.0, window_minutes: 60 }),
       'dashboard_notify',
       1
     ]
@@ -165,7 +165,7 @@ async function generateDemoData(db, vault) {
       'provider',
       'openai',
       'cost_spike',
-      3.0,
+      JSON.stringify({ multiplier: 3.0, window_minutes: 60 }),
       'auto_pause',
       1
     ]
@@ -179,7 +179,7 @@ async function generateDemoData(db, vault) {
       'global',
       null,
       'error_storm',
-      50.0,
+      JSON.stringify({ threshold_percent: 50.0, min_sample_size: 10, window_minutes: 60 }),
       'dashboard_notify',
       1
     ]
@@ -202,7 +202,7 @@ async function generateDemoData(db, vault) {
         null,
         randomFloat(500, 1000),
         randomFloat(100, 200),
-        `Cost spike detected: ₹${randomInt(500, 1000)} (3x baseline)`,
+        JSON.stringify({ message: `Cost spike detected: ₹${randomInt(500, 1000)} (3x baseline)` }),
         'dashboard_notify'
       ]
     );

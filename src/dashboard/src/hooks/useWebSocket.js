@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 
-const WS_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+// Connect to the same origin as the page so the Vite proxy can forward
+// socket.io traffic to port 4000 (/socket.io proxy entry in vite.config.js).
+const WS_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
 /**
  * WebSocket hook for Socket.io connection

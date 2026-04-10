@@ -90,12 +90,8 @@ function Projects() {
               {/* Stats */}
               <div className="space-y-1.5 mb-3">
                 <div className="flex justify-between text-[12px]">
-                  <span className="text-white/35">Total cost</span>
-                  <span className="font-mono text-white/70 tabular-nums">{formatINR(project.total_cost_inr || project.total_cost || 0, { compact: true })}</span>
-                </div>
-                <div className="flex justify-between text-[12px]">
                   <span className="text-white/35">This month</span>
-                  <span className="font-mono text-white/70 tabular-nums">{formatINR(project.cost_this_month || 0, { compact: true })}</span>
+                  <span className="font-mono text-white/70 tabular-nums">{formatINR(project.cost_this_month || project.total_cost_inr || 0, { compact: true })}</span>
                 </div>
                 <div className="flex justify-between text-[12px]">
                   <span className="text-white/35">Last active</span>

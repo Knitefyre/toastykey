@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+// Use relative URL so requests go through the Vite dev proxy (vite.config.js)
+// and work in any Preview / deployment environment without hardcoding a port.
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 /**
  * Generic fetch wrapper with error handling

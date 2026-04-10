@@ -74,39 +74,37 @@ function createStatsRouter(db) {
       const calls = await db.getAllApiCalls();
 
       const outputs = {
-        images: { count: 0, cost_inr: 0 },
-        llm_calls: { count: 0, cost_inr: 0 },
-        audio_minutes: { count: 0, cost_inr: 0 }
+        images: { count: 0, cost: 0 },
+        llm_calls: { count: 0, cost: 0 },
+        audio: { count: 0, cost: 0 }
       };
 
       calls.forEach(call => {
-        // Images: DALL-E endpoints
-        if (call.endpoint.includes('/images') || (call.model && call.model.includes('dall-e'))) {
+        // Images: DALL-E, Stability AI, Replicate image models
+        if (call.provider === 'stability' ||
+            call.endpoint.includes('/images') ||
+            (call.model && (call.model.includes('dall-e') || call.model.includes('stable-diffusion')))) {
           outputs.images.count += 1;
-          outputs.images.cost_inr += call.cost_inr;
+          outputs.images.cost += call.cost_inr || 0;
         }
 
-        // LLM calls: chat/messages endpoints
-        if (call.endpoint.includes('/chat') || call.endpoint.includes('/messages')) {
+        // LLM calls: OpenAI chat, Anthropic messages
+        if ((call.provider === 'openai' || call.provider === 'anthropic') &&
+            (call.endpoint.includes('/chat') || call.endpoint.includes('/messages'))) {
           outputs.llm_calls.count += 1;
-          outputs.llm_calls.cost_inr += call.cost_inr;
+          outputs.llm_calls.cost += call.cost_inr || 0;
         }
 
-        // Audio: Whisper, TTS
-        if (call.endpoint.includes('/audio') ||
+        // Audio: ElevenLabs, Cartesia, OpenAI Whisper/TTS
+        if (call.provider === 'elevenlabs' || call.provider === 'cartesia' ||
+            call.endpoint.includes('/audio') ||
             (call.model && (call.model.includes('whisper') || call.model.includes('tts')))) {
-          outputs.audio_minutes.count += 1; // Count each call as 1 minute
-          outputs.audio_minutes.cost_inr += call.cost_inr;
+          outputs.audio.count += 1; // Count each call as 1 minute
+          outputs.audio.cost += call.cost_inr || 0;
         }
       });
 
-      const result = [
-        { type: 'images', ...outputs.images },
-        { type: 'llm_calls', ...outputs.llm_calls },
-        { type: 'audio_minutes', ...outputs.audio_minutes }
-      ];
-
-      res.json({ outputs: result });
+      res.json(outputs);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }

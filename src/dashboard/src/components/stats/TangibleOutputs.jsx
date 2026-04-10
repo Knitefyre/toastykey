@@ -11,7 +11,10 @@ function TangibleOutputs({ outputs, loading }) {
 
   if (loading) {
     return (
-      <Card title="Tangible Outputs">
+      <Card
+        title="What You Got"
+        tooltip="Shows what you actually created with your API spend — images generated, LLM conversations, audio minutes. More tangible than just seeing dollar amounts."
+      >
         <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
           <Skeleton variant="card" className="h-24" />
           <Skeleton variant="card" className="h-24" />
@@ -50,7 +53,10 @@ function TangibleOutputs({ outputs, loading }) {
   ];
 
   return (
-    <Card title="Tangible Outputs">
+    <Card
+      title="What You Got"
+      tooltip="Shows what you actually created with your API spend — images generated, LLM conversations, audio minutes. More tangible than just seeing dollar amounts."
+    >
       <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         {outputCards.map((item) => {
           const Icon = item.icon;

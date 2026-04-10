@@ -59,7 +59,7 @@ npx toastykey
 | Live spend, charts, provider breakdown | Per-project cost attribution | Rate spikes, cost spikes, error storms |
 | `localhost:3000` | Auto-detected from API calls | Auto-pause before you overspend |
 
-*Screenshots: [docs/screenshots/](docs/screenshots/)*
+> Try it yourself: `npm install -g toastykey && toastykey --demo && cp toastykey-demo.db toastykey.db && toastykey`
 
 ---
 

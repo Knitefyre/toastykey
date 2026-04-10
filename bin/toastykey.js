@@ -114,6 +114,30 @@ async function main() {
       process.exit(0);
     }
 
+    // Handle '--demo' flag
+    if (args.includes('--demo')) {
+      console.log(chalk.bold.cyan('\n🔥 ToastyKey Demo Mode\n'));
+
+      const Database = require('../src/db');
+      const KeyVault = require('../src/vault');
+      const { generateDemoData } = require('../src/demo/generator');
+
+      const db = new Database('./toastykey-demo.db');
+      await db.ready;
+
+      const vault = new KeyVault(db, 'demo-machine-id');
+
+      await generateDemoData(db, vault);
+
+      console.log(chalk.green('\n✓ Demo database ready: toastykey-demo.db'));
+      console.log(chalk.cyan('\nTo use it:'));
+      console.log(chalk.gray('  1. Copy toastykey-demo.db to toastykey.db'));
+      console.log(chalk.gray('  2. Run: npx toastykey'));
+      console.log(chalk.gray('  3. Open: http://localhost:3000\n'));
+
+      process.exit(0);
+    }
+
     // Check if first run
     if (!config.first_run_complete) {
       const keyScanner = new KeyScanner(configManager);

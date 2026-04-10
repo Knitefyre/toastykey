@@ -32,14 +32,16 @@ class ReportGenerator {
 
   registerHelpers() {
     Handlebars.registerHelper('formatCurrency', (value, currency) => {
+      const num = value == null ? 0 : Number(value);
       if (currency === 'INR') {
-        return `₹${value.toLocaleString('en-IN')}`;
+        return `₹${num.toLocaleString('en-IN')}`;
       }
-      return `$${value.toFixed(2)}`;
+      return `$${num.toFixed(2)}`;
     });
 
     Handlebars.registerHelper('formatPercent', (value) => {
-      return `${value.toFixed(1)}%`;
+      const num = value == null ? 0 : Number(value);
+      return `${num.toFixed(1)}%`;
     });
 
     Handlebars.registerHelper('trendIcon', (change) => {
@@ -182,13 +184,15 @@ class ReportGenerator {
       WHERE timestamp BETWEEN ? AND ?
     `, [prevStartDate.toISOString(), prevEndDate.toISOString()]);
 
-    const change = previous.spend > 0
-      ? ((current.spend - previous.spend) / previous.spend) * 100
+    const currentSpend = current.spend || 0;
+    const previousSpend = previous.spend || 0;
+    const change = previousSpend > 0
+      ? ((currentSpend - previousSpend) / previousSpend) * 100
       : 0;
 
     return {
-      current: current.spend || 0,
-      previous: previous.spend || 0,
+      current: currentSpend,
+      previous: previousSpend,
       change,
       direction: change > 0 ? 'up' : change < 0 ? 'down' : 'flat'
     };
@@ -271,14 +275,14 @@ class ReportGenerator {
         recommendations.push({
           type: 'suggestion',
           category: 'cheaper_model',
-          message: `You're using ${m.model} (${m.calls} calls, $${m.cost.toFixed(2)}). Consider gpt-4o-mini for simpler tasks - 70% cheaper with similar quality.`
+          message: `You're using ${m.model} (${m.calls} calls, $${(m.cost || 0).toFixed(2)}). Consider gpt-4o-mini for simpler tasks - 70% cheaper with similar quality.`
         });
       }
       if (m.provider === 'anthropic' && m.model.includes('opus')) {
         recommendations.push({
           type: 'suggestion',
           category: 'cheaper_model',
-          message: `You're using ${m.model} (${m.calls} calls, $${m.cost.toFixed(2)}). Consider claude-sonnet for most tasks - significantly cheaper.`
+          message: `You're using ${m.model} (${m.calls} calls, $${(m.cost || 0).toFixed(2)}). Consider claude-sonnet for most tasks - significantly cheaper.`
         });
       }
     });

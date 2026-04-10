@@ -42,6 +42,19 @@ node_modules/
 src/dashboard/dist/
 src/dashboard/node_modules/
 src/dashboard/.vite/
+src/dashboard/package-lock.json
+**/package-lock.json
+
+# Landing page (not part of npm package)
+landing/
+
+# Dev/test scripts in root
+*.sh
+test-*.js
+TASK5_SUMMARY.md
+VAULT_API_TESTING.md
+reports/
+:memory:
 
 # Logs
 logs/

@@ -1,111 +1,161 @@
-# ToastyKey
+<div align="center">
 
-**Track. Control. Understand.**
+```
+  ████████╗ ██████╗  █████╗ ███████╗████████╗██╗   ██╗██╗  ██╗███████╗██╗   ██╗
+  ╚══██╔══╝██╔═══██╗██╔══██╗██╔════╝╚══██╔══╝╚██╗ ██╔╝██║ ██╔╝██╔════╝╚██╗ ██╔╝
+     ██║   ██║   ██║███████║███████╗   ██║    ╚████╔╝ █████╔╝ █████╗   ╚████╔╝
+     ██║   ██║   ██║██╔══██║╚════██║   ██║     ╚██╔╝  ██╔═██╗ ██╔══╝    ╚██╔╝
+     ██║   ╚██████╔╝██║  ██║███████║   ██║      ██║   ██║  ██╗███████╗   ██║
+     ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝   ╚═╝      ╚═╝   ╚═╝  ╚═╝╚══════╝   ╚═╝
+```
 
-The API cost layer for AI-native builders.
+**Track. Control. Understand. The API cost layer for AI-native builders.**
+
+[![npm version](https://img.shields.io/npm/v/toastykey?color=22c55e&label=npm)](https://www.npmjs.com/package/toastykey)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://img.shields.io/badge/tests-148%20passing-22c55e)](https://github.com/Knitefyre/toastykey)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-22c55e.svg)](https://github.com/Knitefyre/toastykey/blob/main/CONTRIBUTING.md)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-22c55e)](https://nodejs.org)
+
+</div>
 
 ---
 
-## What is ToastyKey?
+## The Problem
 
-ToastyKey is a local MCP server + API proxy that gives you complete visibility and control over your AI API costs. It runs on your machine, intercepts your API calls, logs every dollar spent, and connects directly to Claude Code.
+Your AI agents burn through API credits silently. You find out when the bill arrives — or when a runaway loop costs you $200 in an afternoon. **ToastyKey sits between your code and every AI provider**, logging every call, calculating every cent, and letting you set hard stops before the damage is done.
 
-**One-liner:** The layer between your AI code and your real-world cost.
+---
 
-## Installation
+## Quick Start
 
-### One-Command Install (Session 4A)
+```bash
+# Install globally
+npm install -g toastykey
+
+# Load demo data and launch
+toastykey --demo
+cp toastykey-demo.db toastykey.db
+toastykey
+
+# Open dashboard
+open http://localhost:3000
+```
+
+Or try without installing:
 
 ```bash
 npx toastykey
 ```
 
-On first run, ToastyKey will:
-1. Scan for API keys in your current directory
-2. Optionally scan additional locations (~/.config, environment variables)
-3. Set up a global budget (optional)
-4. Configure project auto-discovery (optional)
-5. Start the server and open the dashboard
+---
 
-### Subsequent Runs
+## Dashboard Preview
 
-```bash
-npx toastykey
+> Real-time API cost monitoring across all your AI providers — local, private, zero telemetry.
+
+| Overview | Projects | Anomaly Detection |
+|----------|----------|-------------------|
+| Live spend, charts, provider breakdown | Per-project cost attribution | Rate spikes, cost spikes, error storms |
+| `localhost:3000` | Auto-detected from API calls | Auto-pause before you overspend |
+
+*Screenshots: [docs/screenshots/](docs/screenshots/)*
+
+---
+
+## What You Get
+
+### Real-Time Cost Tracking
+Stop guessing what your AI agents cost. Every API call to every provider is intercepted, logged, and priced in real-time. See your spend for today, this week, this month — broken down by provider, project, and model.
+
+### Beautiful Dark Dashboard
+An Apple-aesthetic React dashboard that actually looks good. Spend trend charts, provider breakdown bars, "What You Got" tangible output counters (images generated, LLM calls, audio minutes, transcriptions). Monitor [Claude Code costs](https://claude.ai/claude-code), [OpenAI spending](https://platform.openai.com), and all your other AI APIs in one place.
+
+### Budget Alerts That Actually Stop Things
+Set a daily or monthly budget. When you hit 80%, get a warning. At 100%, ToastyKey auto-pauses the responsible provider or kills all API calls outright. No more discovering overspending after the fact.
+
+### Anomaly Detection
+Six trigger types that watch for unusual patterns:
+- **Rate Spike** — sudden surge in calls per minute
+- **Cost Spike** — spending accelerating faster than normal
+- **Error Storm** — >50% of calls failing at once
+- **Token Explosion** — a single call using 10× your average tokens
+- **Silent Drain** — API calls happening when nothing should be running
+- **New Provider** — your code suddenly calling a provider you've never used
+
+Each trigger can log, notify, webhook, auto-pause, or auto-kill.
+
+### Encrypted Local Key Vault
+Store all your API keys in one place, encrypted with AES-256-GCM. Auto-detect keys from `.env` files across your filesystem. Keys never leave your machine.
+
+### MCP Integration — Claude Code Sees Its Own Costs
+```
+"How much have I spent today?" → ₹2,847
+"Set my daily budget to ₹5,000" → Done
+"Which project is costing the most?" → toastykey-dev: ₹738
 ```
 
-ToastyKey checks for new API keys and starts immediately (2-3 seconds).
+ToastyKey exposes **13 MCP tools** directly to Claude Code. Your AI assistant can query its own API costs, set budgets, and get optimization recommendations — all without leaving the conversation.
 
-### CLI Commands
+### Zero Config, Local-First
+Everything stored in SQLite on your machine. No cloud account, no API key for ToastyKey itself, no telemetry, no data ever sent anywhere. Works offline.
 
-```bash
-npx toastykey                    # Start server (with quick check)
-npx toastykey --no-scan          # Skip scan, start immediately
-npx toastykey --port 5000        # Use custom port
-
-npx toastykey scan               # Manually scan for new keys
-npx toastykey config             # Re-run setup wizard
-npx toastykey watch list         # Show watched directories
-npx toastykey watch add ~/code   # Watch directory for new projects
-npx toastykey reset              # Reset configuration
-```
-
-### Configuration
-
-Config stored in `~/.toastykey/config.json`
-
-Override with:
-- CLI flags: `--port 5000`
-- Environment variables: `TOASTYKEY_PORT=5000`
-- Local config: `./.toastykey.json`
-
-### Manual Setup
-
-```bash
-git clone <repository-url>
-cd toastykey
-npm install
-npm start
-```
-
-## Features (Session 1)
-
-✅ **API Proxy** - Intercept and log all API calls
-✅ **Cost Tracking** - Real-time cost calculation in USD and INR
-✅ **Key Vault** - Encrypted storage for all API keys (AES-256-GCM)
-✅ **MCP Integration** - Connect to Claude Code via MCP
-✅ **Multi-Provider** - OpenAI and Anthropic support
-✅ **SQLite Storage** - All data stored locally, never leaves your machine
-✅ **Budget Caps** - Set spending limits (basic enforcement)
-✅ **Project Tracking** - Automatic cost attribution per project
+---
 
 ## Supported Providers
 
-- **OpenAI** - GPT-4o, GPT-4o-mini, DALL-E, Whisper, TTS
-- **Anthropic** - Claude Opus, Sonnet, Haiku
+| Provider | Status | Proxy Route | Tracked Metrics |
+|----------|--------|-------------|-----------------|
+| **OpenAI** | ✅ Native | `/openai/*` | Tokens, cost, model, images, audio |
+| **Anthropic** | ✅ Native | `/anthropic/*` | Input/output tokens, cost, model |
+| **ElevenLabs** | ✅ Native | `/elevenlabs/*` | Characters, audio minutes, voice |
+| **Cartesia** | ✅ Native | `/cartesia/*` | Audio duration, model |
+| **Replicate** | ✅ Native | `/replicate/*` | Predictions, compute time |
+| **Stability AI** | ✅ Native | `/stability/*` | Images, steps, credits |
+| **Any REST API** | ✅ Generic | `/custom/:name/*` | Request count, latency |
 
-More providers coming in Session 3 (ElevenLabs, Cartesia, Replicate, Stability).
+---
 
-## Usage
+## How It Works
 
-### Proxy Mode (Default)
-
-```bash
-npm start
+```
+Your Code
+    │
+    ▼
+ToastyKey Proxy (localhost:4000)
+    │  ┌─────────────────────────────────────┐
+    │  │  1. Intercept request               │
+    │  │  2. Check budget (block if exceeded)│
+    │  │  3. Forward to real API             │
+    │  │  4. Parse response, calculate cost  │
+    │  │  5. Log to SQLite                   │
+    │  │  6. Check anomaly triggers          │
+    │  └─────────────────────────────────────┘
+    │
+    ▼
+Real API Provider (OpenAI, Anthropic, etc.)
+    │
+    ▼
+Your Code gets the response (unchanged)
 ```
 
-Routes:
-- `http://localhost:4000/openai/*` → forwards to `api.openai.com`
-- `http://localhost:4000/anthropic/*` → forwards to `api.anthropic.com`
-- `http://localhost:4000/stats` → your spending stats
-- `http://localhost:4000/vault/add` → add API keys
+**Change one line in your code:**
 
-### MCP Mode (for Claude Code)
+```diff
+# Before (OpenAI example)
+- OPENAI_BASE_URL=https://api.openai.com/v1
 
-```bash
-npm run mcp
+# After — all calls now tracked
++ OPENAI_BASE_URL=http://localhost:4000/openai/v1
 ```
 
-Connect to Claude Code by adding to your MCP config:
+That's it. No SDK changes, no code refactoring. The proxy is transparent.
+
+---
+
+## MCP Integration (Claude Code)
+
+Add to your Claude Code `settings.json`:
 
 ```json
 {
@@ -118,80 +168,199 @@ Connect to Claude Code by adding to your MCP config:
 }
 ```
 
-Then in Claude Code:
-- "How much have I spent today?"
-- "Set my daily budget to 500 rupees"
-- "What API keys do I have?"
+Or use the Settings page in the dashboard — it generates the config snippet automatically.
 
-See [docs/MCP_SETUP.md](docs/MCP_SETUP.md) for details.
+### 13 Available MCP Tools
+
+| Tool | What It Does |
+|------|-------------|
+| `get_spend_summary` | Today/week/month spend with provider breakdown |
+| `get_project_cost` | Cost for a specific project directory |
+| `get_session_cost` | Cost for the current Claude Code session |
+| `set_budget` | Create/update a budget (global, project, or session) |
+| `get_budget_status` | Check remaining budget and alert status |
+| `list_keys` | List all stored API keys (no values exposed) |
+| `add_key` | Store a new API key in the encrypted vault |
+| `get_anomaly_log` | Recent anomaly detection events |
+| `get_provider_stats` | Per-provider breakdown with costs and call counts |
+| `get_cost_breakdown` | Detailed cost breakdown by model and time period |
+| `pause_provider` | Pause all calls to a specific provider |
+| `resume_provider` | Resume a paused provider |
+| `get_recommendations` | AI-powered cost optimization suggestions |
+
+---
+
+## CLI Reference
+
+```bash
+toastykey                    # Start (with quick .env scan)
+toastykey --no-scan          # Start immediately, skip scan
+toastykey --demo             # Generate demo database
+toastykey --port 5000        # Use custom port
+
+toastykey scan               # Manually scan for new API keys
+toastykey config             # Re-run setup wizard
+toastykey watch list         # Show watched directories
+toastykey watch add ~/code   # Watch directory for new projects
+toastykey reset              # Reset all configuration
+```
+
+---
+
+## vs. Alternatives
+
+| Feature | **ToastyKey** | Helicone | Portkey | LiteLLM |
+|---------|:---:|:---:|:---:|:---:|
+| Local-first | ✅ | ❌ Cloud | ❌ Cloud | ✅ |
+| Free forever | ✅ | Freemium | Freemium | ✅ |
+| MCP native | ✅ | ❌ | ❌ | ❌ |
+| Visual dashboard | ✅ | ✅ | ✅ | ❌ CLI |
+| Anomaly detection | ✅ | ❌ | ❌ | ❌ |
+| Encrypted key vault | ✅ | ❌ | ❌ | ❌ |
+| Budget auto-pause | ✅ | ❌ | Partial | Partial |
+| Any REST provider | ✅ Generic | Limited | Limited | ✅ |
+| Zero telemetry | ✅ | ❌ | ❌ | ✅ |
+
+---
 
 ## Architecture
 
 ```
-Your Code → ToastyKey Proxy → Logs to SQLite + Calculates Cost → Real API → Returns Response
-                   ↓
-              Key Vault (encrypted)
-              Pricing Engine
-              Budget Checker
+┌─────────────────────────────────────────────────────────┐
+│                    ToastyKey                             │
+│                                                         │
+│  ┌──────────────┐    ┌──────────────┐    ┌───────────┐ │
+│  │   Proxy      │    │  Dashboard   │    │  MCP      │ │
+│  │  :4000       │    │  :3000       │    │  Server   │ │
+│  │              │    │  React + Vite│    │           │ │
+│  │  /openai     │    │              │    │  13 tools │ │
+│  │  /anthropic  │    │  Overview    │    │           │ │
+│  │  /elevenlabs │    │  Projects    │    │  Claude   │ │
+│  │  /cartesia   │    │  Key Vault   │    │  Code     │ │
+│  │  /replicate  │    │  Triggers    │    │  ↔        │ │
+│  │  /stability  │    │  Reports     │    │  ToastyKey│ │
+│  │  /custom     │    │  Settings    │    │           │ │
+│  └──────┬───────┘    └──────┬───────┘    └───────────┘ │
+│         │                   │                           │
+│         └─────────┬─────────┘                           │
+│                   ▼                                     │
+│           ┌───────────────┐                             │
+│           │   SQLite DB   │                             │
+│           │  (local only) │                             │
+│           │               │                             │
+│           │  api_calls    │                             │
+│           │  projects     │                             │
+│           │  sessions     │                             │
+│           │  budgets      │                             │
+│           │  triggers     │                             │
+│           │  api_keys     │                             │
+│           └───────────────┘                             │
+└─────────────────────────────────────────────────────────┘
 ```
 
-## Documentation
+**Tech Stack:**
+- **Backend:** Node.js + Express, SQLite (better-sqlite3), Socket.io
+- **Dashboard:** React 18, Vite, Tailwind CSS, Recharts, Lucide
+- **MCP:** @modelcontextprotocol/sdk
+- **Security:** AES-256-GCM key encryption (Node.js crypto)
+- **Pricing:** Custom engine with model-level pricing for all providers
 
-- [MCP Setup Guide](docs/MCP_SETUP.md)
-- [Session 1 Complete](docs/SESSION1_COMPLETE.md)
-- [Master Specification](docs/toastykey_masterdoc.pdf)
+---
+
+## Installation Options
+
+### Global CLI (Recommended)
+```bash
+npm install -g toastykey
+toastykey
+```
+
+### From Source
+```bash
+git clone https://github.com/Knitefyre/toastykey.git
+cd toastykey
+npm install
+npm run dashboard:install
+npm run dashboard:build
+npm start
+```
+
+### Dev Mode (hot reload)
+```bash
+npm run dashboard:install
+npm run dev   # Starts both proxy (4000) and Vite dashboard (3000)
+```
+
+---
+
+## Configuration
+
+Config stored at `~/.toastykey/config.json`. Override with:
+
+```bash
+TOASTYKEY_PORT=5000 toastykey          # env var
+toastykey --port 5000                  # CLI flag
+echo '{"port":5000}' > .toastykey.json # local file
+```
+
+---
 
 ## Development
 
 ```bash
-# Run tests
+# Run all 148 tests
 npm test
 
-# Run integration tests
-./tests/run-integration.sh
+# Run tests with coverage
+npm test -- --coverage
 
-# Inspect database
-sqlite3 toastykey.db
+# Inspect the database
+sqlite3 toastykey.db ".tables"
+sqlite3 toastykey.db "SELECT * FROM api_calls LIMIT 5"
+
+# Run just the MCP server (for Claude Code integration)
+npm run mcp
 ```
-
-## Project Status
-
-**Session 1: COMPLETE ✓**
-- Core infrastructure
-- Proxy server
-- Database
-- Key vault
-- MCP server
-
-**Session 2: PLANNED**
-- React dashboard
-- Real-time WebSocket updates
-- Visual budget management
-
-**Session 3: PLANNED**
-- Anomaly detection
-- Trigger system
-- Additional providers
-- npm package
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
-
-## License
-
-MIT License - see [LICENSE](LICENSE) for details.
-
-## Acknowledgments
-
-Built with:
-- Express.js
-- sqlite3
-- @modelcontextprotocol/sdk
-- axios
 
 ---
 
-**ToastyKey v0.1.0** - A Toasty Media Project
+## Contributing
 
-Track. Control. Understand.
+We welcome contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a PR.
+
+**Quick contribution guide:**
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Make your changes + add tests
+4. Run `npm test` — all tests must pass
+5. Submit a PR against `main`
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for community standards.
+
+---
+
+## Security
+
+API keys stored in the vault are encrypted with AES-256-GCM before being written to disk. The encryption key is derived from your machine's unique identifier and never stored in plaintext.
+
+Found a security issue? Please report it privately — see [SECURITY.md](SECURITY.md).
+
+---
+
+## License
+
+MIT License — [Toasty Media Pvt. Ltd.](https://toastymedia.in)
+
+See [LICENSE](LICENSE) for full text.
+
+---
+
+<div align="center">
+
+**[Dashboard](http://localhost:3000)** · **[GitHub](https://github.com/Knitefyre/toastykey)** · **[npm](https://npmjs.com/package/toastykey)** · **[Issues](https://github.com/Knitefyre/toastykey/issues)**
+
+*Built with 🔥 by [Toasty Media](https://toastymedia.in)*
+
+**Track. Control. Understand.**
+
+</div>

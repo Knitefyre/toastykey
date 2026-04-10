@@ -5,6 +5,7 @@ import { ToastProvider, useToast } from './contexts/ToastContext';
 import { useWebSocket } from './hooks/useWebSocket';
 import Layout from './components/layout/Layout';
 import Toast from './components/common/Toast';
+import CommandPalette from './components/common/CommandPalette';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import SetupWizard from './components/wizard/SetupWizard';
 import Overview from './views/Overview';
@@ -13,6 +14,7 @@ import ProjectDetail from './views/ProjectDetail';
 import KeyVault from './views/KeyVault';
 import Triggers from './views/Triggers';
 import Reports from './views/Reports';
+import Settings from './views/Settings';
 import { getSetupStatus } from './services/api';
 
 function ToastContainer() {
@@ -35,11 +37,32 @@ function ToastContainer() {
 function AppContent() {
   const [needsSetup, setNeedsSetup] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { socket } = useWebSocket();
   const { showToast } = useToast();
 
   useEffect(() => {
     checkSetupStatus();
+  }, []);
+
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Cmd+K / Ctrl+K - Command Palette
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(true);
+      }
+      // Cmd+B / Ctrl+B - Toggle Sidebar
+      if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+        e.preventDefault();
+        setSidebarCollapsed(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   // Listen for project_detected events
@@ -101,14 +124,16 @@ function AppContent() {
   return (
     <div key="dashboard">
       <Routes>
-        <Route path="/" element={<Layout><Overview /></Layout>} />
-        <Route path="/projects" element={<Layout><Projects /></Layout>} />
-        <Route path="/projects/:id" element={<Layout><ProjectDetail /></Layout>} />
-        <Route path="/vault" element={<Layout><KeyVault /></Layout>} />
-        <Route path="/triggers" element={<Layout><Triggers /></Layout>} />
-        <Route path="/reports" element={<Layout><Reports /></Layout>} />
+        <Route path="/" element={<Layout collapsed={sidebarCollapsed}><Overview /></Layout>} />
+        <Route path="/projects" element={<Layout collapsed={sidebarCollapsed}><Projects /></Layout>} />
+        <Route path="/projects/:id" element={<Layout collapsed={sidebarCollapsed}><ProjectDetail /></Layout>} />
+        <Route path="/vault" element={<Layout collapsed={sidebarCollapsed}><KeyVault /></Layout>} />
+        <Route path="/triggers" element={<Layout collapsed={sidebarCollapsed}><Triggers /></Layout>} />
+        <Route path="/reports" element={<Layout collapsed={sidebarCollapsed}><Reports /></Layout>} />
+        <Route path="/settings" element={<Layout collapsed={sidebarCollapsed}><Settings /></Layout>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <CommandPalette isOpen={showCommandPalette} onClose={() => setShowCommandPalette(false)} />
       <ToastContainer />
     </div>
   );

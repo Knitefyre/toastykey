@@ -22,7 +22,7 @@ const navigationLinks = [
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed = false }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(() => {
@@ -31,6 +31,11 @@ export default function Sidebar() {
     return stored ? JSON.parse(stored) : false;
   });
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Sync with external collapsed prop (from keyboard shortcut)
+  useEffect(() => {
+    setIsCollapsed(collapsed);
+  }, [collapsed]);
 
   // Save collapsed state to localStorage
   useEffect(() => {

@@ -14,7 +14,7 @@
 
 If you discover a security vulnerability in ToastyKey, please report it privately:
 
-**Email:** security@toastymedia.in
+**Email:** Open a [private security advisory](https://github.com/Knitefyre/toastykey/security/advisories/new) on GitHub, or contact [@premmuditc](https://instagram.com/premmuditc) on Instagram.
 
 Include in your report:
 - Description of the vulnerability
@@ -42,10 +42,10 @@ ToastyKey is designed to be local-first and privacy-preserving:
 
 - **API keys** are encrypted with AES-256-GCM before being written to disk
 - **Encryption key** is derived from your machine's unique identifier — never stored in plaintext
-- **Zero telemetry** — no data is ever sent to Toasty Media or any third party
+- **Zero telemetry** — no data is ever sent anywhere; everything stays on your machine
 - **Local SQLite** — all call logs stay on your machine
 - **No cloud dependency** — ToastyKey works entirely offline
 
 ## PGP
 
-PGP key for security@toastymedia.in: *Not yet published. Contact us directly for secure communication.*
+Contact via GitHub security advisories or [@premmuditc](https://instagram.com/premmuditc) for secure communication.

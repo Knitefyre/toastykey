@@ -3,7 +3,7 @@ title: I tracked my AI development costs for 30 days. Here's what I found (and t
 published: true
 description: After months of mystery AI API bills, I built ToastyKey — a local proxy that tracks every OpenAI, Anthropic, and ElevenLabs call in real-time. Here's what 30 days of data revealed.
 tags: ai, opensource, javascript, devtools
-cover_image: https://toastykey.toastymedia.in/og-image.png
+cover_image: https://opengraph.githubassets.com/1/Knitefyre/toastykey
 ---
 
 I've been building AI-powered applications for about a year. During that time, my Anthropic and OpenAI bills have ranged from $3 to $47 in a single month — and for most of that time, I had no idea why.

@@ -349,7 +349,7 @@ Found a security issue? Please report it privately — see [SECURITY.md](SECURIT
 
 ## License
 
-MIT License — [Toasty Media Pvt. Ltd.](https://toastymedia.in)
+MIT License — [premmuditc](https://linkedin.com/in/bakatoast)
 
 See [LICENSE](LICENSE) for full text.
 
@@ -359,7 +359,7 @@ See [LICENSE](LICENSE) for full text.
 
 **[Dashboard](http://localhost:3000)** · **[GitHub](https://github.com/Knitefyre/toastykey)** · **[npm](https://npmjs.com/package/toastykey)** · **[Issues](https://github.com/Knitefyre/toastykey/issues)**
 
-*Built with 🔥 by [Toasty Media](https://toastymedia.in)*
+*Built by [premmuditc](https://linkedin.com/in/bakatoast) · [Instagram](https://instagram.com/premmuditc)*
 
 **Track. Control. Understand.**
 
